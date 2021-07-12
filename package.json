@@ -22,17 +22,23 @@
 		"commands": [
 			{
 				"command": "extension.addJSDoc",
-				"title": "add jsdoc"
+				"title": "add jsdoc",
+				"category": "jsdoc"
 			}
 		],
+		"menus": {
+			"commandPalette": [
+			  
+			]
+		  },
 		"configuration": [
 			{
 				"title": "jsdoc",
 				"properties": {
-					"jsdoc2.author": {
+					"jsdoc.author": {
 						"type": "string",
 						"default": "",
-						"description": "添加此选项, jsdoc 将自动插入作者"
+						"description": "Add this option, jsdoc will automatically insert the author 添加此选项, jsdoc 将自动插入作者"
 					}
 				}
 			}
