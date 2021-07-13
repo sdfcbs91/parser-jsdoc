@@ -1,4 +1,4 @@
-const vscode = require('vscode');
+import * as vscode from 'vscode'
 
 /**
  * 初始化、进行事件注册 - 插件的主入口
@@ -9,7 +9,7 @@ const vscode = require('vscode');
  * @param {*} context  vscode插件上下文
  */
 
-module.exports = function(context){
+module.exports = function(context:vscode.ExtensionContext){
   // 注册 addJSDoc
   context.subscriptions.push(
     vscode.commands.registerCommand('extension.addJSDoc',require("./components/addJSDoc.js"))

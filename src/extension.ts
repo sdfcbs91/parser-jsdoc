@@ -1,11 +1,11 @@
-const vscode = require('vscode');
+import * as vscode from 'vscode'
 
 
-exports.activate = function (context) {
+exports.activate = function (context:vscode.ExtensionContext) {
   console.log('激活 addJSDoc')
   console.log(vscode)
 
-  require('./main.js')(context);
+  require('./main')(context);
   console.log('激活 addJSDoc end')
     
     

@@ -1,11 +1,11 @@
 {
-	"publisher": "jsdoc",
+	"publisher": "sdfcbs",
 	"name": "jsdoc",
-	"displayName": "jsdoc",
-	"description": "gen jsdoc template",
-	"version": "1.0.2",
+	"displayName": "vscode-jsdoc",
+	"description": "add jsdoc template",
+	"version": "0.0.1",
 	"repository": {
-		"url": "https://github.com/lllllllqw/vscode-jsdoc.git",
+		"url": "",
 		"type": "git"
 	},
 	"engines": {
@@ -17,7 +17,7 @@
 	"activationEvents": [
 		"*"
 	],
-	"main": "./src/extension",
+	"main": "./out/extension",
 	"contributes": {
 		"commands": [
 			{
@@ -27,10 +27,8 @@
 			}
 		],
 		"menus": {
-			"commandPalette": [
-			  
-			]
-		  },
+			"commandPalette": []
+		},
 		"configuration": [
 			{
 				"title": "jsdoc",
@@ -53,9 +51,9 @@
 		"package": "vsce package"
 	},
 	"devDependencies": {
-		"typescript": "^3.1.4",
-		"vscode": "^1.1.25",
-		"@types/node": "^8.10.25",
-		"@types/mocha": "^2.2.42"
+		"@types/mocha": "^2.2.48",
+		"@types/node": "^8.10.66",
+		"typescript": "^3.9.10",
+		"vscode": "^1.1.37"
 	}
 }

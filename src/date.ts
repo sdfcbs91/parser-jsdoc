@@ -1,5 +1,5 @@
  // 获得格式化时间
-  exports.getFormatDate = function(rule, date) {
+ export function getFormatDate (rule="YYYY-MM-DD", date: number | string | Date) {
     // 'YYYY-MM-DD hh:mm:ss'
     let strRule = rule
     if (date === '' || date === undefined || date === null) {
@@ -30,7 +30,7 @@
       func: 'getSeconds',
     }]
     
-    const dateAsAny = date
+    const dateAsAny:any = date
     regList.forEach(o => {
       const { reg, func } = o
       if (reg.test(rule)) {

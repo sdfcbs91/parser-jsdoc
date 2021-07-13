@@ -1,22 +1,29 @@
-const vscode = require('vscode');
-const {getFormatDate} = require('./../date.js');
+import * as vscode from 'vscode'
+import {getFormatDate} from '../date';
 
 
 /**
  * addJSDoc 根据选中都函数参数，进行文档注释
  * @param {*} context vscode插件上下文
  */
-module.exports = function(context){
+module.exports = function(context:vscode.ExtensionContext){
     const editor = vscode.window.activeTextEditor
     if (!editor) {
       return
     }
-    console.log(13,editor.document.getText())
+    // 定义匹配规则
+    // (param:xx,param:xx)
+    const getParamReg = /\(([^)]*)\)/
+    // ?:sombody[] 
+    const paramEndReg = /[?]{0,1}\:(\s)*\w+(\[\])*/g
+    // ?:
+    const paramTypeReg = /[?]{0,1}\:(\s)*/g
+
     // 获取 selection 对象(其中包含当前选择的行与字符)
     const selection = editor.selection
     // 获取选中的内容
     const selectionText = editor.document.getText(selection)
-    const getParamReg = /\(([^)]*)\)/
+    
     // 获取参数列表, 去除其中的空格与回车
     const m = selectionText.match(getParamReg)
 
@@ -25,9 +32,7 @@ module.exports = function(context){
     }
     const paramList = m[1].replace(/[\t\s\r]/g, '').split(',').filter(s => s !== '')
 
-    // ?:sombody 规则
-    const paramEndReg = /[?]{0,1}\:(\s)*\w+/g
-    const paramTypeReg = /[?]{0,1}\:(\s)*/g
+    
     
     editor.edit(editBuilder => {
       // 取上一行的末尾作为插入点
@@ -89,4 +94,5 @@ module.exports = function(context){
       // 插入注释
       editBuilder.insert(insertPosition, text)
     })
+    
 }
