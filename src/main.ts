@@ -9,10 +9,13 @@ import * as vscode from 'vscode'
  * @param {*} context  vscode插件上下文
  */
 
-module.exports = function(context:vscode.ExtensionContext){
+module.exports = (context:vscode.ExtensionContext):any=>{
   // 注册 addJSDoc
   context.subscriptions.push(
-    vscode.commands.registerCommand('extension.addJSDoc',require("./components/addJSDoc.js"))
+    vscode.commands.registerCommand('extension.addJSDoc',require("./components/addJSDoc"))
   )
   // 注册 initJSDoc
+  context.subscriptions.push(
+    vscode.commands.registerCommand('extension.initJSDoc',require("./components/initJSDoc"))
+  )
 }

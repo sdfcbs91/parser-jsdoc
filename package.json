@@ -24,6 +24,11 @@
 				"command": "extension.addJSDoc",
 				"title": "add jsdoc",
 				"category": "jsdoc"
+			},
+			{
+				"command": "extension.initJSDoc",
+				"title": "init jsdoc",
+				"category": "jsdoc"
 			}
 		],
 		"menus": {
