@@ -1,6 +1,5 @@
 import * as vscode from 'vscode'
-import {getFormatDate} from '../date';
-
+import {getFormatDate} from '../comm/date';
 
 /**
  * addJSDoc 根据选中都函数参数，进行文档注释
