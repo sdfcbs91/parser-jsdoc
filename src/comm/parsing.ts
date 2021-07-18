@@ -1,6 +1,9 @@
 /**
  * 
  */
+ import * as vscode from 'vscode'
+ import {getFormatDate} from '../comm/date';
+
 // 定义匹配规则
 // 返回类型
 // :any  \s*(:\w+)*
@@ -22,8 +25,41 @@ const typeSymbolEndRegStr = `[\\]\\}]{1}`
  * @param str str需要是函数的文字格式
  * @returns 
  */
-export function getDocText(str:string):string{
+ export function getFuncText(str:string):string{
     let text = ""
+    let fJson = getFuncJson(str)
+    text = '/**\r'
+    text += `* 描述\r`
+
+    // 作者
+    const configuration = vscode.workspace.getConfiguration('jsdoc');
+    const author = configuration.get('author') || ''
+    author && (text += `* @author ${author}\r`)
+
+    // 日期
+    text += `* @date ${getFormatDate('YYYY-MM-DD',new Date())}\r`
+
+    
+    if(fJson !== null){
+        // 参数
+        text += fJson.params.map((par)=>{
+            return `* @param {${par.typeStr}} ${par.nameStr}\r`
+        })
+        
+        // 返回值
+        text += `* @returns {${fJson.resTypeStr}}\r`
+        text += `*/\r`
+    }   
+
+    return text
+ }
+
+/**
+ * 
+ * @param str str需要是函数的文字格式
+ * @returns 
+ */
+export function getFuncJson(str:string):{params:{nameStr: string,typeStr: string}[],resTypeStr:string}|null{
     // 定义字符串
     // 函数内所有的参数
     //let resParamStr = ''
@@ -35,12 +71,12 @@ export function getDocText(str:string):string{
     const m = str.match(new RegExp(paramRegStr+resRegStrOr,'g'))
     console.log(25,m)
     if(!m) {
-        return ""
+        return null
     }
     // 获取(xxx,xxx)形式的参数
     const paramArr = m[0].match(new RegExp(paramRegStr))
     if(!paramArr){
-        return ""
+        return null
     }
     // 如果有类型返回，那么就获取并设置resTypeStr
     if(m[0].length>paramArr[0].length){
@@ -57,30 +93,21 @@ export function getDocText(str:string):string{
     }
     // 获取具体的参数列表
     let params = getParamArr(paramArr[0])
-    console.log(60,paramArr[0])
+
     console.log(61,params)
     console.log(62,resTypeStr)
-    
 
-    // 如果匹配的长度刚好是2,那么第2个为返回的类型
-    // if(m.length>=2 && typeof m[1] !=='undefined'){
-    //     // 去掉第一个:
-    //     resTypeStr = m[1].substring(1,m[1].length)
-    //     resParamStr = m[0].substring(0,m[0].length-m[1].length)
-    // }else{
-    //     resParamStr = m[0]
-    // }
-    // // 获取具体的参数
-    // console.log(42,resTypeStr)
-    // console.log(43,resParamStr)
     
-    return text
+    return {
+        params,
+        resTypeStr
+    }
 }
 
 /**
  * 
- * @param str str需要是函数的文字格式
- * @returns {[]}
+ * @param str str需要是函数的文字格式 xxx()
+ * @returns {{nameStr,typeStr}[]}
  */
  export function getParamArr(str:string):{nameStr: string, typeStr: string}[]{
      let paramArr = []
@@ -105,7 +132,7 @@ export function getDocText(str:string):string{
      // :往后遍历
      let nextColonReg = true
      // ,往后遍历
-     let commaColonReg = true
+     let nextCommaColonReg = true
      let colonArr = null
      let commaArr = null
      while(bool){
@@ -114,7 +141,7 @@ export function getDocText(str:string):string{
             colonArr = colonReg.exec(str);
         }
         // ,
-        if(commaColonReg === true){
+        if(nextCommaColonReg === true){
             commaArr = commaReg.exec(str);
         }
         //是否存在, 存在,再进行判断 ,:的前后顺序
@@ -125,9 +152,9 @@ export function getDocText(str:string):string{
                     nameStr = str.substring(index,commaArr.index)
                     typeStr = 'any'
                     index += commaArr.index+1
-                    commaColonReg = false
+                    nextColonReg = false
                 }else{
-                    commaColonReg = true
+                    nextColonReg = true
                     // :在,之前 证明该次的参数有类型定义
                     nameStr = str.substring(index,colonArr.index)
 
@@ -148,22 +175,11 @@ export function getDocText(str:string):string{
                             colonReg.lastIndex = index
                             commaReg.lastIndex = index
                         }else{
-                           
+                           // 解析有误 退出
                             bool = false
                             continue
                         }
-                        // let cplStructJson = matchClxStruct(tmpStr)
-                        // // 获取到了复杂结构 进行下一个参数继续获取
-                        // if(cplStructJson){
-                        //     typeStr = cplStructJson.paramText
-                        //     index += cplStructJson.fullEnd
-                            
-                        //     // 由于经历了复杂结构，所以从复杂结构之后的位数开始遍历
-                        //     colonReg.lastIndex = index
-                        //     commaReg.lastIndex = index
-                        // }else{
-                            
-                        // }
+                       
                     }else{
                         // 没有复杂结构 则为普通的变量类型参数
                         typeStr = middleStr
@@ -217,7 +233,6 @@ export function getDocText(str:string):string{
                 typeStr = 'any'
             }
             
-            
         }
 
         paramArr.push({
@@ -227,8 +242,7 @@ export function getDocText(str:string):string{
 
     }
      
-  
-     return paramArr
+    return paramArr
  }
 
 
@@ -345,7 +359,6 @@ export function getDocText(str:string):string{
                     num--
                 }
                 
-                console.log(269,num)
             }else{
                 //str = str.substring(typeSymbolRegArr.index+1,str.length)
                 //typeSymbolReg.lastIndex = 0
@@ -357,9 +370,9 @@ export function getDocText(str:string):string{
                 }else{
                     // 结构异常 返回null
                     bool = false
+                    continue
                 }
                 
-                console.log(276,num)
             }
         }else{
             num=-1

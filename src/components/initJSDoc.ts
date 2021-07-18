@@ -1,6 +1,6 @@
 import * as vscode from 'vscode'
-import {getFormatDate} from '../comm/date';
-import {getDocText} from '../comm/parsing';
+
+import {getFuncText} from '../comm/parsing';
 
 /**
  * initJSDoc 把当前文件下所有的函数进行一次函数注释
@@ -64,7 +64,7 @@ module.exports = function(context:vscode.ExtensionContext){
     // 记录已经有过标记的函数起始位
     const annoIndexArr:any = []
     // 记录所有函数的起始位
-    const indexArr:any = []
+    const indexArr:{startIndex:number,endIndex:number,text:string,regObj:RegExp}[] = []
 
     regList.forEach(regStr=>{
       //const annotatedArr = allText.match(new RegExp(jsDocRegStr+sRegStr+regStr,'g'));
@@ -104,6 +104,7 @@ module.exports = function(context:vscode.ExtensionContext){
           startIndex:funcArr.index,
           // 匹配到的函数文本
           text:funcArr[0],
+          regObj:funcReg,
           endIndex:funcReg.lastIndex
         })
         funcArr = funcReg.exec(allText);
@@ -150,17 +151,32 @@ module.exports = function(context:vscode.ExtensionContext){
 
     //以倒序方式进行插入函数注释
     for(let i= indexArr.length-1;i>-1;i--){
-      getDocText(indexArr[i].text);
+      let indexObj = indexArr[i]
+      let text = getFuncText(indexObj.text);
+
+      // 拿该次的正则对象进行一次文字内容的注释的替换
+      // repalce的回调参数中,第0个肯定是全匹配
+      allText = allText.replace(indexObj.regObj,function(str){
+        let index = getReplaceNumber(arguments)
+        console.log('==============='+indexObj.startIndex+"-"+getReplaceNumber(arguments)+"================"+":"+str)
+       
+        if(index === indexObj.startIndex){
+          return text + str
+        }
+        return str
+      })
 
     }
+    console.log(166,allText)
 
-    console.log(107,annoIndexArr)
-    console.log(108,indexArr)
-    // console.log(allText)
-    // console.log(allText.split(/\n/g))
-    // console.log(allText.split(/\r\n/g))
-    // console.log(allText.split(/\r\n|\r/g))
-     console.log(getFormatDate('YYYY-MM-DD',new Date()))
+    
+    editor.edit(editBuilder => {
+      // 从开始到结束，全量替换
+      const end = new vscode.Position(editor.document.lineCount + 1, 0);
+      
+      editBuilder.replace(new vscode.Range(new vscode.Position(0, 0), end), allText);
+    });
+    vscode.window.showInformationMessage('文档注释完成添加！');
 }
 
 /**
@@ -190,4 +206,17 @@ function inNodeInterval(nodePre:{startIndex:number,endIndex:number},nodeNext:{st
     return true
   }
   return false
+}
+
+/**
+ * 在replace的回调函数的参数中获取index
+ */
+function getReplaceNumber(args:any):number{
+  let num = -1
+  for(let i=0;i<args.length;i++){
+    if(typeof args[i] === 'number'){
+      return args[i]
+    }
+  }
+  return num
 }
