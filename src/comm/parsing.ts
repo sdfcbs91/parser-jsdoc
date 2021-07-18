@@ -67,9 +67,8 @@ export function getFuncJson(str:string):{params:{nameStr: string,typeStr: string
     let resTypeStr = 'any'
 
     // 获取参数列表, 去除其中的空格与回车
-    console.log(23,str)
     const m = str.match(new RegExp(paramRegStr+resRegStrOr,'g'))
-    console.log(25,m)
+
     if(!m) {
         return null
     }
@@ -93,10 +92,6 @@ export function getFuncJson(str:string):{params:{nameStr: string,typeStr: string
     }
     // 获取具体的参数列表
     let params = getParamArr(paramArr[0])
-
-    console.log(61,params)
-    console.log(62,resTypeStr)
-
     
     return {
         params,

@@ -61,36 +61,63 @@ module.exports = function(context:vscode.ExtensionContext){
       return
     }
     let allText = editor.document.getText();
-    // 记录已经有过标记的函数起始位
+
+    // 纯注释 规则
+    let jsdReg = new RegExp(jsDocRegStr,'g')
+
+    // 匹配到的注释数组
+    let jsdocRegArr = jsdReg.exec(allText);
+
+    // 记录注释的起始结束位
+    const jsdocArr:any = []
+
+    while(jsdocRegArr){
+      jsdocArr.push({
+        startIndex:jsdocRegArr.index,
+          endIndex:jsdReg.lastIndex
+      })
+      jsdocRegArr = jsdReg.exec(allText);
+    }
+
+    // 记录已经有过注释的函数起始结束位
     const annoIndexArr:any = []
-    // 记录所有函数的起始位
+    // 记录所有函数的起始结束位
     const indexArr:{startIndex:number,endIndex:number,text:string,regObj:RegExp}[] = []
+    
 
     regList.forEach(regStr=>{
       //const annotatedArr = allText.match(new RegExp(jsDocRegStr+sRegStr+regStr,'g'));
 
       // 获取带有规范注解的函数
+      
       // 注释+函数
       let annotatedReg = new RegExp(jsDocRegStr+sRegStr+regStr,'g')
-      // 去除注释的函数
+      // 所有的函数
       let annoFuncReg = new RegExp(regStr,'g')
       // 函数 - 匹配文中所有的函数
       let funcReg = new RegExp(regStr,'g')
 
       let annotatedArr = annotatedReg.exec(allText);
-
+      
       // 由于exec的特性，每次会找到最邻近的一个
       while(annotatedArr){
+        // 匹配后，重置一次顺序
+        annoFuncReg.lastIndex = 0
+
         // 获取到注解到函数位置
         // 每次遍历到最接近的一个
-        let annoFuncArr = annoFuncReg.exec(annotatedArr[0]);
+        let annoFuncArr = annoFuncReg.exec(annotatedArr[0])
         if(annoFuncArr){
-          // 匹配后，重置一次顺序
-          annoFuncReg.lastIndex = 0
+          let annoFuncStartIndex = 0
+          while(annoFuncArr){
+            annoFuncStartIndex = annoFuncArr.index
+            annoFuncArr = annoFuncReg.exec(annotatedArr[0])
+          }
+
           // 标记已经添加过注释的位置
           annoIndexArr.push({
             // 文档位置+扫描内的函数位置
-            startIndex:annotatedArr.index + annoFuncArr.index,
+            startIndex:annotatedArr.index + annoFuncStartIndex,
             endIndex:annotatedReg.lastIndex
           })
         }
@@ -100,12 +127,28 @@ module.exports = function(context:vscode.ExtensionContext){
       // 匹配所有的函数
       let funcArr = funcReg.exec(allText);
       while(funcArr){
+        let startIndex = funcArr.index
+        let endIndex = funcReg.lastIndex
+        // 在注释文档内的函数不要进行注释
+        // 判断改函数是否是在注释内
+        let bool = false
+        for(let i=0;i<jsdocArr.length;i++){
+          let inInterval = inNodeInterval(jsdocArr[i],{startIndex,endIndex})
+          if(inInterval === true){
+            bool = true
+            break
+          }
+        }
+        if(bool===true){
+          funcArr = funcReg.exec(allText);
+          continue
+        }
         indexArr.push({
-          startIndex:funcArr.index,
+          startIndex,
           // 匹配到的函数文本
           text:funcArr[0],
           regObj:funcReg,
-          endIndex:funcReg.lastIndex
+          endIndex
         })
         funcArr = funcReg.exec(allText);
       }
@@ -128,7 +171,6 @@ module.exports = function(context:vscode.ExtensionContext){
       }
     }
     
-
     // 所有匹配到到函数组
     // 进行一次排序 从小到大
     indexArr.sort((l:any,r:any)=>{
@@ -146,6 +188,7 @@ module.exports = function(context:vscode.ExtensionContext){
         if(inInterval===true){
           indexArr.splice(i,1)
         }
+        
       }
     }
 
@@ -158,8 +201,7 @@ module.exports = function(context:vscode.ExtensionContext){
       // repalce的回调参数中,第0个肯定是全匹配
       allText = allText.replace(indexObj.regObj,function(str){
         let index = getReplaceNumber(arguments)
-        console.log('==============='+indexObj.startIndex+"-"+getReplaceNumber(arguments)+"================"+":"+str)
-       
+               
         if(index === indexObj.startIndex){
           return text + str
         }
@@ -167,8 +209,6 @@ module.exports = function(context:vscode.ExtensionContext){
       })
 
     }
-    console.log(166,allText)
-
     
     editor.edit(editBuilder => {
       // 从开始到结束，全量替换
@@ -176,7 +216,7 @@ module.exports = function(context:vscode.ExtensionContext){
       
       editBuilder.replace(new vscode.Range(new vscode.Position(0, 0), end), allText);
     });
-    vscode.window.showInformationMessage('文档注释完成添加！');
+    vscode.window.showInformationMessage('Documentation comments are added!\r\n文档注释完成添加！');
 }
 
 /**
