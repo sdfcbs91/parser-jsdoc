@@ -13,7 +13,7 @@
 	],
 	"version": "0.0.1",
 	"repository": {
-		"url": "",
+		"url": "https://github.com/sdfcbs91/parser-jsdoc",
 		"type": "git"
 	},
 	"engines": {
