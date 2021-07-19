@@ -42,8 +42,8 @@ const typeSymbolEndRegStr = `[\\]\\}]{1}`
     
     if(fJson !== null){
         // 参数
-        text += fJson.params.map((par)=>{
-            return `* @param {${par.typeStr}} ${par.nameStr}\r`
+        fJson.params.forEach((par)=>{
+            text += `* @param {${par.typeStr}} ${par.nameStr}\r`
         })
         
         // 返回值
@@ -106,7 +106,7 @@ export function getFuncJson(str:string):{params:{nameStr: string,typeStr: string
  */
  export function getParamArr(str:string):{nameStr: string, typeStr: string}[]{
      let paramArr = []
-     let colonReg = /\:/g
+     let colonReg = /(\?)?\:/g
      let commaReg = /\,/g
      
 
@@ -154,7 +154,7 @@ export function getFuncJson(str:string):{params:{nameStr: string,typeStr: string
                     nameStr = str.substring(index,colonArr.index)
 
                     // 判断 :xx, 中是否含有 [ { 的复杂结构符号
-                    let middleStr = str.substring(colonArr.index+1,commaArr.index)
+                    let middleStr = str.substring(colonArr.index+colonArr[0].length,commaArr.index)
                     
                     let isSymbol = isSymbolModel(middleStr)
                     // 如果含有复杂结构 获取得到复杂结构开始位置和结束位置
@@ -166,7 +166,7 @@ export function getFuncJson(str:string):{params:{nameStr: string,typeStr: string
                         let colonJson = handelColonModel(tmpStr)
                         if(colonJson){
                             typeStr = colonJson.typeStr
-                            index += colonJson.index
+                            index += commaArr.index+1
                             colonReg.lastIndex = index
                             commaReg.lastIndex = index
                         }else{
@@ -182,7 +182,10 @@ export function getFuncJson(str:string):{params:{nameStr: string,typeStr: string
                     }
 
                 }
-
+                // 可能是 ?:
+                if(colonArr[0].length>1){
+                    nameStr =  `[${nameStr}]`
+                }
             }else{
                 // 存在逗号，但不存在: 证明只是类型定义，返回参数名 any 即可
                 nameStr = str.substring(index,commaArr.index)
@@ -197,10 +200,10 @@ export function getFuncJson(str:string):{params:{nameStr: string,typeStr: string
             bool = false
             // 如果存在: 
             if(colonArr){
-                nameStr = str.substring(index,colonArr.index)
+                nameStr = str.substring(index,colonArr.index).trim()
 
                 // 判断 :xx, 中是否含有 [ { 的复杂结构符号
-                let middleStr = str.substring(colonArr.index+1,str.length)
+                let middleStr = str.substring(colonArr.index+colonArr[0].length,str.length)
                 let isSymbol = isSymbolModel(middleStr)
                 // 是否是复杂结构
                 if(isSymbol === true){
@@ -211,6 +214,7 @@ export function getFuncJson(str:string):{params:{nameStr: string,typeStr: string
                     let colonJson = handelColonModel(tmpStr)
                     if(colonJson){
                         typeStr = colonJson.typeStr
+                        
                         index += colonJson.index
                         colonReg.lastIndex = index
                         commaReg.lastIndex = index
@@ -222,6 +226,10 @@ export function getFuncJson(str:string):{params:{nameStr: string,typeStr: string
                     
                 }else{
                     typeStr = middleStr
+                }
+                // 可能是 ?:
+                if(colonArr[0].length>1){
+                    nameStr =  `[${nameStr}]`
                 }
             }else{
                 nameStr = str
@@ -264,6 +272,8 @@ export function getFuncJson(str:string):{params:{nameStr: string,typeStr: string
   * 
   */
   export function matchClxStruct(str:string):any{
+      // :开始的位置
+    const startColonIndex =  new RegExp(/\:/,'g').exec(str)?.index||null
     const typeSymbolReg = new RegExp(typeSymbolRegStr,'g')
     const typeSymbolEndReg = new RegExp(typeSymbolEndRegStr,'g')
     /* 根据闭合关系,设置得出规则：以{[开始后，得到的闭合]}数等于开始数，那么就证明该结构申明结束。
@@ -363,6 +373,13 @@ export function getFuncJson(str:string):{params:{nameStr: string,typeStr: string
                     typeSymbolRegArr = tmpTypeSymbolRegArr
                     num ++
                 }else{
+                    // 开启的位置在闭合位置的前面
+                    if(num ===0){
+                        endIndex = typeSymbolEndRegArr.index + 1
+                        num = -1
+                        continue
+
+                    }
                     // 结构异常 返回null
                     bool = false
                     continue
@@ -396,6 +413,11 @@ export function getFuncJson(str:string):{params:{nameStr: string,typeStr: string
     let nextIndex = getFirstCommaIndex(str.substring(fullEnd,str.length))
     if(nextIndex!==null){
         fullEnd += nextIndex+1
+    }
+
+    // :总会在{之前
+    if(startColonIndex!== null && firstStart>startColonIndex){
+        firstStart = startColonIndex+1
     }
 
     return {

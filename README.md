@@ -36,8 +36,3 @@ none
 ## Release Notes
 
 none
-
-### 1.0.0
-
-jsdoc 1.0 正式发布!
-

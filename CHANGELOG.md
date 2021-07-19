@@ -1,7 +1,5 @@
 # Change Log
-All notable changes to the "jsdoc" extension will be documented in this file.
 
-Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
+* 2021.07.19 (v0.0.1)
 
-## [Unreleased]
-- Initial release
+    * 功能发布，包含 `add jsdoc` 、 `init jsdoc` 命令

@@ -6,6 +6,27 @@ import {getFuncText} from '../comm/parsing';
  * initJSDoc 把当前文件下所有的函数进行一次函数注释
  * @param {*} context vscode插件上下文
  */
+
+// 定义匹配规则
+// jsdoc文档规则 
+// /**[one or more chars]*/ => /\/\*\*[\s\S]+?\*\//g
+const jsDocRegStr = `\\/\\*\\*[\\s\\S]+?\\*\\/`
+//返回类型
+// :any  \s*(:\w+)*
+// const resRegStrOr = `\\s*(:\\w+)*`
+const resRegStrOr = `\\s*(:(\\w|\\[|\\]|\\{|\\}|\\:|\\"|\\')+)*`
+// 空格
+const sRegStr = `\\s*`
+// 参数 
+// (xx)
+const paramRegStr =  `\\([^(]*\\)`
+// 函数名
+// somebody
+const funNameRegStr =  `\\w+`
+// 声明
+// left const var
+const stateRegStr = `(export)?(const|left|var)?`
+
 module.exports = function(context:vscode.ExtensionContext){
   
 
@@ -17,185 +38,22 @@ module.exports = function(context:vscode.ExtensionContext){
    * 4.把新内容进行写入替换
    */
     const editor = vscode.window.activeTextEditor
-    // 定义匹配规则
+   
 
-    // jsdoc文档规则 
-    // /**[one or more chars]*/ => /\/\*\*[\s\S]+?\*\//g
-    const jsDocRegStr = `\\/\\*\\*[\\s\\S]+?\\*\\/`
-    //返回类型
-    // :any  \s*(:\w+)*
-    // const resRegStrOr = `\\s*(:\\w+)*`
-    const resRegStrOr = `\\s*(:(\\w|\\[|\\]|\\{|\\}|\\:|\\"|\\')+)*`
-    // 空格
-    const sRegStr = `\\s*`
-    // 参数 
-    // (xx)
-    const paramRegStr =  `\\([^(]*\\)`
-    // 函数名
-    // somebody
-    const funNameRegStr =  `\\w+`
-    // 声明
-    // left const var
-    const stateRegStr = `(const|left|var)?`
-       
-    let regList = [
-      // function somebody():any{}
-      `function${sRegStr}${funNameRegStr}${sRegStr}${paramRegStr}${sRegStr}${resRegStrOr}`,
-      // [const,left,var] somebody = function():any{}
-      `${stateRegStr}${sRegStr}${funNameRegStr}${sRegStr}=${sRegStr}function${sRegStr}${paramRegStr}${sRegStr}${resRegStrOr}`,
-      // [const,left,var] somebody = ():any=>{}
-      `${stateRegStr}${sRegStr}${funNameRegStr}${sRegStr}=${sRegStr}${paramRegStr}${sRegStr}${resRegStrOr}=>`,
-      // somebody():any{} 取消掉该规则，与 if(),then(),xx(){}等调用函数语法相撞
-      //`${funNameRegStr}${sRegStr}${paramRegStr}${sRegStr}${resRegStrOr}${sRegStr}\\{`,
-      // module.exports = function () {}
-      `module.exports${sRegStr}=${sRegStr}function${sRegStr}${paramRegStr}`,
-      // module.exports = () => {}
-      `module.exports${sRegStr}=${sRegStr}${paramRegStr}${sRegStr}=>`,
-      // exports.somebody = function () {}
-      `exports.${funNameRegStr}${sRegStr}=${sRegStr}function${sRegStr}${paramRegStr}`,
-      // exports.somebody = () => {}
-      `exports.${funNameRegStr}${sRegStr}=${sRegStr}${paramRegStr}=>`,
-    ]
+    
     
     if (!editor) {
       return
     }
     let allText = editor.document.getText();
 
-    // 纯注释 规则
-    let jsdReg = new RegExp(jsDocRegStr,'g')
+    let indexArr = getMatchArr(allText)
 
-    // 匹配到的注释数组
-    let jsdocRegArr = jsdReg.exec(allText);
-
-    // 记录注释的起始结束位
-    const jsdocArr:any = []
-
-    while(jsdocRegArr){
-      jsdocArr.push({
-        startIndex:jsdocRegArr.index,
-          endIndex:jsdReg.lastIndex
-      })
-      jsdocRegArr = jsdReg.exec(allText);
-    }
-
-    // 记录已经有过注释的函数起始结束位
-    const annoIndexArr:any = []
-    // 记录所有函数的起始结束位
-    const indexArr:{startIndex:number,endIndex:number,text:string,regObj:RegExp}[] = []
     
-
-    regList.forEach(regStr=>{
-      //const annotatedArr = allText.match(new RegExp(jsDocRegStr+sRegStr+regStr,'g'));
-
-      // 获取带有规范注解的函数
-      
-      // 注释+函数
-      let annotatedReg = new RegExp(jsDocRegStr+sRegStr+regStr,'g')
-      // 所有的函数
-      let annoFuncReg = new RegExp(regStr,'g')
-      // 函数 - 匹配文中所有的函数
-      let funcReg = new RegExp(regStr,'g')
-
-      let annotatedArr = annotatedReg.exec(allText);
-      
-      // 由于exec的特性，每次会找到最邻近的一个
-      while(annotatedArr){
-        // 匹配后，重置一次顺序
-        annoFuncReg.lastIndex = 0
-
-        // 获取到注解到函数位置
-        // 每次遍历到最接近的一个
-        let annoFuncArr = annoFuncReg.exec(annotatedArr[0])
-        if(annoFuncArr){
-          let annoFuncStartIndex = 0
-          while(annoFuncArr){
-            annoFuncStartIndex = annoFuncArr.index
-            annoFuncArr = annoFuncReg.exec(annotatedArr[0])
-          }
-
-          // 标记已经添加过注释的位置
-          annoIndexArr.push({
-            // 文档位置+扫描内的函数位置
-            startIndex:annotatedArr.index + annoFuncStartIndex,
-            endIndex:annotatedReg.lastIndex
-          })
-        }
-        annotatedArr = annotatedReg.exec(allText);
-      }
-
-      // 匹配所有的函数
-      let funcArr = funcReg.exec(allText);
-      while(funcArr){
-        let startIndex = funcArr.index
-        let endIndex = funcReg.lastIndex
-        // 在注释文档内的函数不要进行注释
-        // 判断改函数是否是在注释内
-        let bool = false
-        for(let i=0;i<jsdocArr.length;i++){
-          let inInterval = inNodeInterval(jsdocArr[i],{startIndex,endIndex})
-          if(inInterval === true){
-            bool = true
-            break
-          }
-        }
-        if(bool===true){
-          funcArr = funcReg.exec(allText);
-          continue
-        }
-        indexArr.push({
-          startIndex,
-          // 匹配到的函数文本
-          text:funcArr[0],
-          regObj:funcReg,
-          endIndex
-        })
-        funcArr = funcReg.exec(allText);
-      }
-      
-    })
-
-    // 由于函数申明的规则存在覆盖性，故进行一次数组的数据冗余去除 - 函数被匹配到多个规则下时，取最长到那条规则为有效函数
-    // 带有注释的函数其实无需排序除冗余,作为对比用到即可
-    
-    // 进行一次排序 从小到大
-    annoIndexArr.sort((l:any,r:any)=>{
-      return l.startIndex - r.startIndex
-    })
-    // 如果起始点的位置在上一个节点起始->结尾区间,那么这个节点匹配规则进行删除
-    for(let i=annoIndexArr.length-1;i>0;i--){
-      let inInterval = inNodeInterval(annoIndexArr[i-1],annoIndexArr[i])
-      // 当前节点${i}在前一节的区间中，进行删除
-      if(inInterval===true){
-        annoIndexArr.splice(i,1)
-      }
-    }
-    
-    // 所有匹配到到函数组
-    // 进行一次排序 从小到大
-    indexArr.sort((l:any,r:any)=>{
-      return l.startIndex - r.startIndex
-    })
-    // 如果起始点的位置在上一个节点起始->结尾区间,那么这个节点匹配规则进行删除
-    for(let i=indexArr.length-1;i>-1;i--){
-      // 如果在已注释到函数中，那么进行删除-不用加注释
-      if(getNodeByStartIndex(annoIndexArr,indexArr[i].startIndex)>-1){
-        indexArr.splice(i,1)
-        continue
-      }
-      if(i>0){
-        let inInterval = inNodeInterval(indexArr[i-1],indexArr[i])
-        if(inInterval===true){
-          indexArr.splice(i,1)
-        }
-        
-      }
-    }
-
     //以倒序方式进行插入函数注释
     for(let i= indexArr.length-1;i>-1;i--){
       let indexObj = indexArr[i]
-      let text = getFuncText(indexObj.text);
+      let tmpText = getFuncText(indexObj.text);
 
       // 拿该次的正则对象进行一次文字内容的注释的替换
       // repalce的回调参数中,第0个肯定是全匹配
@@ -203,12 +61,22 @@ module.exports = function(context:vscode.ExtensionContext){
         let index = getReplaceNumber(arguments)
                
         if(index === indexObj.startIndex){
-          return text + str
+          return tmpText + str
         }
         return str
       })
 
     }
+    
+
+    
+    
+
+    
+    
+    
+
+    
     
     editor.edit(editBuilder => {
       // 从开始到结束，全量替换
@@ -217,6 +85,163 @@ module.exports = function(context:vscode.ExtensionContext){
       editBuilder.replace(new vscode.Range(new vscode.Position(0, 0), end), allText);
     });
     vscode.window.showInformationMessage('Documentation comments are added!\r\n文档注释完成添加！');
+}
+
+/**
+ * 根据文本获取匹配到的函数数组
+ * @param str 
+ */
+function getMatchArr(str:string){
+  let text = str
+  let regList = [
+    // function somebody():any{}
+    `function${sRegStr}${funNameRegStr}${sRegStr}${paramRegStr}${sRegStr}${resRegStrOr}`,
+    // [const,left,var] somebody = function():any{}
+    `${stateRegStr}${sRegStr}${funNameRegStr}${sRegStr}=${sRegStr}function${sRegStr}${paramRegStr}${sRegStr}${resRegStrOr}`,
+    // [const,left,var] somebody = ():any=>{}
+    `${stateRegStr}${sRegStr}${funNameRegStr}${sRegStr}=${sRegStr}${paramRegStr}${sRegStr}${resRegStrOr}=>`,
+    // somebody():any{} 取消掉该规则，与 if(),then(),xx(){}等调用函数语法相撞
+    //`${funNameRegStr}${sRegStr}${paramRegStr}${sRegStr}${resRegStrOr}${sRegStr}\\{`,
+    // module.exports = function () {}
+    `module.exports${sRegStr}=${sRegStr}function${sRegStr}${paramRegStr}`,
+    // module.exports = () => {}
+    `module.exports${sRegStr}=${sRegStr}${paramRegStr}${sRegStr}=>`,
+    // exports.somebody = function () {}
+    `exports.${funNameRegStr}${sRegStr}=${sRegStr}function${sRegStr}${paramRegStr}`,
+    // exports.somebody = () => {}
+    `exports.${funNameRegStr}${sRegStr}=${sRegStr}${paramRegStr}=>`,
+  ]
+
+  // 纯注释 规则
+  let jsdReg = new RegExp(jsDocRegStr,'g')
+
+  // 匹配到的注释数组
+  let jsdocRegArr = jsdReg.exec(str);
+
+  // 记录注释的起始结束位
+  const jsdocArr:any = []
+
+  while(jsdocRegArr){
+    jsdocArr.push({
+      startIndex:jsdocRegArr.index,
+        endIndex:jsdReg.lastIndex
+    })
+    jsdocRegArr = jsdReg.exec(text);
+  }
+
+  // 记录已经有过注释的函数起始结束位
+  const annoIndexArr:any = []
+  // 记录所有函数的起始结束位
+  const indexArr:{startIndex:number,endIndex:number,text:string,regObj:RegExp}[] = []
+
+  regList.forEach(regStr=>{
+    //const annotatedArr = allText.match(new RegExp(jsDocRegStr+sRegStr+regStr,'g'));
+
+    // 获取带有规范注解的函数
+    
+    // 注释+函数
+    let annotatedReg = new RegExp(jsDocRegStr+sRegStr+regStr,'g')
+    // 所有的函数
+    let annoFuncReg = new RegExp(regStr,'g')
+    // 函数 - 匹配文中所有的函数
+    let funcReg = new RegExp(regStr,'g')
+
+    let annotatedArr = annotatedReg.exec(text);
+    
+    // 由于exec的特性，每次会找到最邻近的一个
+    while(annotatedArr){
+      // 匹配后，重置一次顺序
+      annoFuncReg.lastIndex = 0
+
+      // 获取到注解到函数位置
+      // 每次遍历到最接近的一个
+      let annoFuncArr = annoFuncReg.exec(annotatedArr[0])
+      if(annoFuncArr){
+        let annoFuncStartIndex = 0
+        while(annoFuncArr){
+          annoFuncStartIndex = annoFuncArr.index
+          annoFuncArr = annoFuncReg.exec(annotatedArr[0])
+        }
+
+        // 标记已经添加过注释的位置
+        annoIndexArr.push({
+          // 文档位置+扫描内的函数位置
+          startIndex:annotatedArr.index + annoFuncStartIndex,
+          endIndex:annotatedReg.lastIndex
+        })
+      }
+      annotatedArr = annotatedReg.exec(text);
+    }
+
+    // 匹配所有的函数
+    let funcArr = funcReg.exec(text);
+    while(funcArr){
+      let startIndex = funcArr.index
+      let endIndex = funcReg.lastIndex
+      // 在注释文档内的函数不要进行注释
+      // 判断改函数是否是在注释内
+      let bool = false
+      for(let i=0;i<jsdocArr.length;i++){
+        let inInterval = inNodeInterval(jsdocArr[i],{startIndex,endIndex})
+        if(inInterval === true){
+          bool = true
+          break
+        }
+      }
+      if(bool===true){
+        funcArr = funcReg.exec(text);
+        continue
+      }
+      indexArr.push({
+        startIndex,
+        // 匹配到的函数文本
+        text:funcArr[0],
+        regObj:funcReg,
+        endIndex
+      })
+      funcArr = funcReg.exec(text);
+    }
+    
+  })
+
+  // 由于函数申明的规则存在覆盖性，故进行一次数组的数据冗余去除 - 函数被匹配到多个规则下时，取最长到那条规则为有效函数
+  // 带有注释的函数其实无需排序除冗余,作为对比用到即可
+  
+  // 进行一次排序 从小到大
+  annoIndexArr.sort((l:any,r:any)=>{
+    return l.startIndex - r.startIndex
+  })
+  // 如果起始点的位置在上一个节点起始->结尾区间,那么这个节点匹配规则进行删除
+  for(let i=annoIndexArr.length-1;i>0;i--){
+    let inInterval = inNodeInterval(annoIndexArr[i-1],annoIndexArr[i])
+    // 当前节点${i}在前一节的区间中，进行删除
+    if(inInterval===true){
+      annoIndexArr.splice(i,1)
+    }
+  }
+
+  // 所有匹配到到函数组
+  // 进行一次排序 从小到大
+  indexArr.sort((l:any,r:any)=>{
+    return l.startIndex - r.startIndex
+  })
+  // 如果起始点的位置在上一个节点起始->结尾区间,那么这个节点匹配规则进行删除
+  for(let i=indexArr.length-1;i>-1;i--){
+    // 如果在已注释到函数中，那么进行删除-不用加注释
+    if(getNodeByStartIndex(annoIndexArr,indexArr[i].startIndex)>-1){
+      indexArr.splice(i,1)
+      continue
+    }
+    if(i>0){
+      let inInterval = inNodeInterval(indexArr[i-1],indexArr[i])
+      if(inInterval===true){
+        indexArr.splice(i,1)
+      }
+      
+    }
+  }
+
+  return indexArr
 }
 
 /**
