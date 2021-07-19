@@ -1,8 +1,16 @@
 {
-	"publisher": "sdfcbs",
-	"name": "jsdoc",
-	"displayName": "vscode-jsdoc",
-	"description": "add jsdoc template",
+	"publisher": "winkchen",
+	"name": "parser-jsdoc",
+	"displayName": "parser-jsdoc",
+	"description": "add jsdoc template 为jsdoc添加注释",
+	"keywords": [
+		"documentation",
+		"doc",
+		"comments",
+		"JSDoc",
+		"parser",
+		"standard"
+	],
 	"version": "0.0.1",
 	"repository": {
 		"url": "",
