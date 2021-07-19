@@ -25,7 +25,9 @@ const paramRegStr =  `\\([^(]*\\)`
 const funNameRegStr =  `\\w+`
 // 声明
 // left const var
-const stateRegStr = `(export)?(const|left|var)?`
+const stateRegStr = `(const|left|var)?`
+
+const exportRegStr = `export`
 
 module.exports = function(context:vscode.ExtensionContext){
   
@@ -68,16 +70,6 @@ module.exports = function(context:vscode.ExtensionContext){
 
     }
     
-
-    
-    
-
-    
-    
-    
-
-    
-    
     editor.edit(editBuilder => {
       // 从开始到结束，全量替换
       const end = new vscode.Position(editor.document.lineCount + 1, 0);
@@ -100,6 +92,14 @@ function getMatchArr(str:string){
     `${stateRegStr}${sRegStr}${funNameRegStr}${sRegStr}=${sRegStr}function${sRegStr}${paramRegStr}${sRegStr}${resRegStrOr}`,
     // [const,left,var] somebody = ():any=>{}
     `${stateRegStr}${sRegStr}${funNameRegStr}${sRegStr}=${sRegStr}${paramRegStr}${sRegStr}${resRegStrOr}=>`,
+
+    // export function somebody():any{}
+    `${exportRegStr}${sRegStr}function${sRegStr}${funNameRegStr}${sRegStr}${paramRegStr}${sRegStr}${resRegStrOr}`,
+    // export [const,left,var] somebody = function():any{}
+    `${exportRegStr}${sRegStr}${stateRegStr}${sRegStr}${funNameRegStr}${sRegStr}=${sRegStr}function${sRegStr}${paramRegStr}${sRegStr}${resRegStrOr}`,
+    // export [const,left,var] somebody = ():any=>{}
+    `${exportRegStr}${sRegStr}${stateRegStr}${sRegStr}${funNameRegStr}${sRegStr}=${sRegStr}${paramRegStr}${sRegStr}${resRegStrOr}=>`,
+
     // somebody():any{} 取消掉该规则，与 if(),then(),xx(){}等调用函数语法相撞
     //`${funNameRegStr}${sRegStr}${paramRegStr}${sRegStr}${resRegStrOr}${sRegStr}\\{`,
     // module.exports = function () {}
