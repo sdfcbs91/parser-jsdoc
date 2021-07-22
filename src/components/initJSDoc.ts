@@ -27,7 +27,7 @@ const paramRegStr =  `\\([^(]*\\)`
 const funNameRegStr =  `\\w+`
 // 声明
 // left const var
-const stateRegStr = `(const|left|var)?`
+const stateRegStr = `(const|left|var)?(\\s|\;)\\w+`
 
 const exportRegStr = `export`
 
@@ -163,7 +163,7 @@ function getMatchArr(str:string){
     let annoFuncReg = new RegExp(regStr,'g')
     // 函数 - 匹配文中所有的函数
     let funcReg = new RegExp(regStr,'g')
-
+    console.log(funcReg)
     let annotatedArr = annotatedReg.exec(text);
     // index , last
     // 由于exec的特性，每次会找到最邻近的一个
