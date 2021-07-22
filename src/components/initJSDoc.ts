@@ -248,21 +248,11 @@ function getMatchArr(str:string){
   })
   // 如果起始点的位置在上一个节点起始->结尾区间,那么这个节点匹配规则进行删除
   for(let i=indexArr.length-1;i>-1;i--){
-    // 如果在已注释到函数中，那么进行删除-不用加注释
-      //  console.log(getNodeByStartIndex(annoIndexArr,indexArr[i].startIndex), '当前节点')
-
     if(getNodeByStartIndex(annoIndexArr,indexArr[i].startIndex)>-1){
       indexArr.splice(i,1)
       continue
     }
-    
-    // for (let index = 0; index < annoIndexArr.length; index++) {
-    //   const element = annoIndexArr[index];
-    //   console.log(text.slice(element.startIndex,element.endIndex), '查看字符串')
-    // }
-    // console.log(text.slice(indexArr[i].startIndex,indexArr[i].endIndex),'查看函数体')
-    console.log(getFilterCommentIndex(annoIndexArr,indexArr[i].startIndex), '匹配数组长度')
-
+    // 过滤 // 注释 
     if(getFilterCommentIndex(annoIndexArr,indexArr[i].startIndex)>-1){
       indexArr.splice(i,1)
       continue
