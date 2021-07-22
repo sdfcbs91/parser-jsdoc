@@ -117,8 +117,8 @@ function getMatchArr(str:string){
 
   // 纯注释 规则
   let jsdReg = new RegExp(jsDocRegStr,'g')
-  // 注释
-  let jsddReg = new RegExp(/(\s*\/\/)|(\s*\n\s*\/\/)/,'g') 
+  // 注释  
+  let jsddReg = new RegExp(/(\/\/[^\n^\r]*\n)|(\/\/[^\n^\r]*\r\n)/,'g') 
   // 匹配到的注释数组
   let jsdocRegArr = jsdReg.exec(str);
   // 匹配到的注释数组 //
@@ -150,11 +150,8 @@ function getMatchArr(str:string){
     })
     jsdocReg1Arr = jsddReg.exec(text);
   }
-  // areaBeginAndEnd.forEach(item=>{
-  //   let msg = text.slice(item.startIndex,item.endIndex);
-  //   console.log(msg,'测试')
-  // })
-  console.log('获取有注释的地方', areaBeginAndEnd)
+  
+  
   regList.forEach(regStr=>{
     //const annotatedArr = allText.match(new RegExp(jsDocRegStr+sRegStr+regStr,'g'));
     // console.log(regStr)
@@ -192,8 +189,7 @@ function getMatchArr(str:string){
       }
       annotatedArr = annotatedReg.exec(text);
     }
-    // console.log('jsdocArr',jsdocArr)
-    // console.log(annoIndexArr,'annoIndexArr')
+   
     // 匹配所有的函数
     let funcArr = funcReg.exec(text);
     while(funcArr){
@@ -267,10 +263,10 @@ function getMatchArr(str:string){
     // console.log(text.slice(indexArr[i].startIndex,indexArr[i].endIndex),'查看函数体')
     console.log(getNodeByStartIndexFilter(annoIndexArr,indexArr[i].startIndex), '匹配数组长度')
 
-    if(getNodeByStartIndexFilter(annoIndexArr,indexArr[i].startIndex)>0){
+    if(getNodeByStartIndexFilter(annoIndexArr,indexArr[i].startIndex)>-1){
       indexArr.splice(i,1)
       continue
-    }else if(getNodeByStartIndexFilter(annoIndexArr,indexArr[i].startIndex)>0){
+    }else if(getNodeByStartIndexFilter(annoIndexArr,indexArr[i].startIndex)>-1){
        indexArr.splice(i,1)
        continue
     }
@@ -286,12 +282,6 @@ function getMatchArr(str:string){
   return indexArr
 }
 
-//
-function aa (text){
-
-}
-//
-
 /**
  * 根据`startIndex`获取数组中对应的节点
  * @param {array}  nodes 数组节点
@@ -299,7 +289,13 @@ function aa (text){
  * @returns {number}
  */
 function getNodeByStartIndexFilter(nodes:[{startIndex:number,endIndex:number}],startIndex:number){
-  return nodes.filter(item=>item.startIndex < startIndex && startIndex>= item.endIndex).length;
+  for(let i=0;i<nodes.length;i++){
+    let item = nodes[i]
+    if(item.startIndex < startIndex && item.endIndex > startIndex){
+      return i
+    }
+  }
+  return -1
 }
 /**
  * 根据`startIndex`获取数组中对应的节点
