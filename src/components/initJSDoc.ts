@@ -25,8 +25,8 @@ const paramRegStr =  `\\([^(]*\\)`
 // 函数名
 // somebody
 const funNameRegStr =  `\\w+`
-// 声明
-// left const var
+// 声明 
+// left const var  同时用来控制xxx.xxx的 .规则
 const stateRegStr = `(const|left|var)?(\\s|\;)\\w+`
 
 const exportRegStr = `export`
