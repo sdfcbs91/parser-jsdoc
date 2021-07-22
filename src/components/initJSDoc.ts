@@ -261,12 +261,12 @@ function getMatchArr(str:string){
     //   console.log(text.slice(element.startIndex,element.endIndex), '查看字符串')
     // }
     // console.log(text.slice(indexArr[i].startIndex,indexArr[i].endIndex),'查看函数体')
-    console.log(getNodeByStartIndexFilter(annoIndexArr,indexArr[i].startIndex), '匹配数组长度')
+    console.log(getFilterCommentIndex(annoIndexArr,indexArr[i].startIndex), '匹配数组长度')
 
-    if(getNodeByStartIndexFilter(annoIndexArr,indexArr[i].startIndex)>-1){
+    if(getFilterCommentIndex(annoIndexArr,indexArr[i].startIndex)>-1){
       indexArr.splice(i,1)
       continue
-    }else if(getNodeByStartIndexFilter(annoIndexArr,indexArr[i].startIndex)>-1){
+    }else if(getFilterCommentIndex(annoIndexArr,indexArr[i].startIndex)>-1){
        indexArr.splice(i,1)
        continue
     }
@@ -288,7 +288,7 @@ function getMatchArr(str:string){
  * @param {number} startIndex 数字
  * @returns {number}
  */
-function getNodeByStartIndexFilter(nodes:[{startIndex:number,endIndex:number}],startIndex:number){
+function getFilterCommentIndex(nodes:[{startIndex:number,endIndex:number}],startIndex:number){
   for(let i=0;i<nodes.length;i++){
     let item = nodes[i]
     if(item.startIndex < startIndex && item.endIndex > startIndex){
