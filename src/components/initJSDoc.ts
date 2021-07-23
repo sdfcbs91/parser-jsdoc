@@ -10,6 +10,8 @@ import {getFuncText} from '../comm/parsing';
 // 定义匹配规则
 // jsdoc文档规则 
 // /**[one or more chars]*/ => /\/\*\*[\s\S]+?\*\//g
+// pre
+
 const jsDocRegStr = `\\/\\*\\*[\\s\\S]+?\\*\\/`
 //返回类型
 // :any  \s*(:\w+)*
@@ -23,9 +25,9 @@ const paramRegStr =  `\\([^(]*\\)`
 // 函数名
 // somebody
 const funNameRegStr =  `\\w+`
-// 声明
-// left const var
-const stateRegStr = `(const|left|var)?`
+// 声明 
+// left const var  同时用来控制xxx.xxx的 .规则
+const stateRegStr = `(const|left|var)?(\\s|\;)\\w+`
 
 const exportRegStr = `export`
 
@@ -61,7 +63,7 @@ module.exports = function(context:vscode.ExtensionContext){
       // repalce的回调参数中,第0个肯定是全匹配
       allText = allText.replace(indexObj.regObj,function(str){
         let index = getReplaceNumber(arguments)
-               
+        console.log(indexObj.text)       
         if(index === indexObj.startIndex){
           return tmpText + str
         }
@@ -84,7 +86,8 @@ module.exports = function(context:vscode.ExtensionContext){
  * @param str 
  */
 function getMatchArr(str:string){
-  let text = str
+  let text = str;
+  
   let regList = [
     // function somebody():any{}
     `function${sRegStr}${funNameRegStr}${sRegStr}${paramRegStr}${sRegStr}${resRegStrOr}`,
@@ -114,10 +117,13 @@ function getMatchArr(str:string){
 
   // 纯注释 规则
   let jsdReg = new RegExp(jsDocRegStr,'g')
-
+  // 注释  
+  let jsddReg = new RegExp(/(\/\/[^\n^\r]*\n)|(\/\/[^\n^\r]*\r\n)/,'g') 
   // 匹配到的注释数组
   let jsdocRegArr = jsdReg.exec(str);
-
+  // 匹配到的注释数组 //
+  let jsdocReg1Arr = jsddReg.exec(str)
+  console.error(jsdocReg1Arr,'111')
   // 记录注释的起始结束位
   const jsdocArr:any = []
 
@@ -129,14 +135,26 @@ function getMatchArr(str:string){
     jsdocRegArr = jsdReg.exec(text);
   }
 
+  const areaBeginAndEnd: any = []
   // 记录已经有过注释的函数起始结束位
-  const annoIndexArr:any = []
+  let annoIndexArr:any = []
   // 记录所有函数的起始结束位
   const indexArr:{startIndex:number,endIndex:number,text:string,regObj:RegExp}[] = []
+  // 获取带注释//
 
+    // let array = []
+  while(jsdocReg1Arr){
+    areaBeginAndEnd.push({
+      startIndex: jsdocReg1Arr.index,
+      endIndex: jsddReg.lastIndex === undefined?text.length:jsddReg.lastIndex
+    })
+    jsdocReg1Arr = jsddReg.exec(text);
+  }
+  
+  
   regList.forEach(regStr=>{
     //const annotatedArr = allText.match(new RegExp(jsDocRegStr+sRegStr+regStr,'g'));
-
+    // console.log(regStr)
     // 获取带有规范注解的函数
     
     // 注释+函数
@@ -145,9 +163,9 @@ function getMatchArr(str:string){
     let annoFuncReg = new RegExp(regStr,'g')
     // 函数 - 匹配文中所有的函数
     let funcReg = new RegExp(regStr,'g')
-
+    console.log(funcReg)
     let annotatedArr = annotatedReg.exec(text);
-    
+    // index , last
     // 由于exec的特性，每次会找到最邻近的一个
     while(annotatedArr){
       // 匹配后，重置一次顺序
@@ -162,7 +180,6 @@ function getMatchArr(str:string){
           annoFuncStartIndex = annoFuncArr.index
           annoFuncArr = annoFuncReg.exec(annotatedArr[0])
         }
-
         // 标记已经添加过注释的位置
         annoIndexArr.push({
           // 文档位置+扫描内的函数位置
@@ -172,7 +189,7 @@ function getMatchArr(str:string){
       }
       annotatedArr = annotatedReg.exec(text);
     }
-
+   
     // 匹配所有的函数
     let funcArr = funcReg.exec(text);
     while(funcArr){
@@ -182,6 +199,7 @@ function getMatchArr(str:string){
       // 判断改函数是否是在注释内
       let bool = false
       for(let i=0;i<jsdocArr.length;i++){
+        // console.log('{startOdp}',jsdocArr[i])
         let inInterval = inNodeInterval(jsdocArr[i],{startIndex,endIndex})
         if(inInterval === true){
           bool = true
@@ -206,7 +224,9 @@ function getMatchArr(str:string){
 
   // 由于函数申明的规则存在覆盖性，故进行一次数组的数据冗余去除 - 函数被匹配到多个规则下时，取最长到那条规则为有效函数
   // 带有注释的函数其实无需排序除冗余,作为对比用到即可
-  
+  let tmpArr  = annoIndexArr.concat(areaBeginAndEnd);
+  // console.log(text[175],'匹配到')
+  annoIndexArr = tmpArr;
   // 进行一次排序 从小到大
   annoIndexArr.sort((l:any,r:any)=>{
     return l.startIndex - r.startIndex
@@ -214,6 +234,7 @@ function getMatchArr(str:string){
   // 如果起始点的位置在上一个节点起始->结尾区间,那么这个节点匹配规则进行删除
   for(let i=annoIndexArr.length-1;i>0;i--){
     let inInterval = inNodeInterval(annoIndexArr[i-1],annoIndexArr[i])
+    // console.log(annoIndexArr[i], '当前节点',inInterval)
     // 当前节点${i}在前一节的区间中，进行删除
     if(inInterval===true){
       annoIndexArr.splice(i,1)
@@ -227,10 +248,17 @@ function getMatchArr(str:string){
   })
   // 如果起始点的位置在上一个节点起始->结尾区间,那么这个节点匹配规则进行删除
   for(let i=indexArr.length-1;i>-1;i--){
-    // 如果在已注释到函数中，那么进行删除-不用加注释
     if(getNodeByStartIndex(annoIndexArr,indexArr[i].startIndex)>-1){
       indexArr.splice(i,1)
       continue
+    }
+    // 过滤 // 注释 
+    if(getFilterCommentIndex(annoIndexArr,indexArr[i].startIndex)>-1){
+      indexArr.splice(i,1)
+      continue
+    }else if(getFilterCommentIndex(annoIndexArr,indexArr[i].startIndex)>-1){
+       indexArr.splice(i,1)
+       continue
     }
     if(i>0){
       let inInterval = inNodeInterval(indexArr[i-1],indexArr[i])
@@ -250,10 +278,25 @@ function getMatchArr(str:string){
  * @param {number} startIndex 数字
  * @returns {number}
  */
+function getFilterCommentIndex(nodes:[{startIndex:number,endIndex:number}],startIndex:number){
+  for(let i=0;i<nodes.length;i++){
+    let item = nodes[i]
+    if(item.startIndex < startIndex && item.endIndex > startIndex){
+      return i
+    }
+  }
+  return -1
+}
+/**
+ * 根据`startIndex`获取数组中对应的节点
+ * @param {array}  nodes 数组节点
+ * @param {number} startIndex 数字
+ * @returns {number}
+ */
 function getNodeByStartIndex(nodes:[{startIndex:number}],startIndex:number):number{
   let r = -1;
   for(let i = 0;i<nodes.length;i++){
-    if(nodes[i].startIndex === startIndex){
+    if(nodes[i].startIndex === startIndex ){
       return i
     }
   }
