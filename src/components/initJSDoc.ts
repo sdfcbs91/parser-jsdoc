@@ -58,12 +58,12 @@ module.exports = function(context:vscode.ExtensionContext){
     for(let i= indexArr.length-1;i>-1;i--){
       let indexObj = indexArr[i]
       let tmpText = getFuncText(indexObj.text);
-
+      // console.log(tmpText);
       // 拿该次的正则对象进行一次文字内容的注释的替换
       // repalce的回调参数中,第0个肯定是全匹配
       allText = allText.replace(indexObj.regObj,function(str){
         let index = getReplaceNumber(arguments)
-        console.log(indexObj.text)       
+        // console.log(indexObj.text)       
         if(index === indexObj.startIndex){
           return tmpText + str
         }
@@ -123,7 +123,7 @@ function getMatchArr(str:string){
   let jsdocRegArr = jsdReg.exec(str);
   // 匹配到的注释数组 //
   let jsdocReg1Arr = jsddReg.exec(str)
-  console.error(jsdocReg1Arr,'111')
+  // console.error(jsdocReg1Arr,'111')
   // 记录注释的起始结束位
   const jsdocArr:any = []
 
@@ -163,7 +163,7 @@ function getMatchArr(str:string){
     let annoFuncReg = new RegExp(regStr,'g')
     // 函数 - 匹配文中所有的函数
     let funcReg = new RegExp(regStr,'g')
-    console.log(funcReg)
+    // console.log(funcReg)
     let annotatedArr = annotatedReg.exec(text);
     // index , last
     // 由于exec的特性，每次会找到最邻近的一个

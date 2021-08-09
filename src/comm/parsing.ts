@@ -27,6 +27,7 @@ const typeSymbolEndRegStr = `[\\]\\}]{1}`
  */
  export function getFuncText(str:string):string{
     let text = ""
+    // 
     let fJson = getFuncJson(str)
     text = '/**\r'
     text += `* 描述\r`
@@ -38,7 +39,7 @@ const typeSymbolEndRegStr = `[\\]\\}]{1}`
 
     // 日期
     text += `* @date ${getFormatDate('YYYY-MM-DD',new Date())}\r`
-
+    
     
     if(fJson !== null){
         // 参数
@@ -92,7 +93,6 @@ export function getFuncJson(str:string):{params:{nameStr: string,typeStr: string
     }
     // 获取具体的参数列表
     let params = getParamArr(paramArr[0])
-    
     return {
         params,
         resTypeStr
@@ -112,7 +112,6 @@ export function getFuncJson(str:string):{params:{nameStr: string,typeStr: string
 
      //去掉可能的()
      str = str.replace(/^\(/,'').replace(/\)$/,'')
-
      // 每次遍历到最接近的一个:
      // xxx:{xxx},xxx:xxx
      
@@ -232,7 +231,7 @@ export function getFuncJson(str:string):{params:{nameStr: string,typeStr: string
                     nameStr =  `[${nameStr}]`
                 }
             }else{
-                nameStr = str
+                nameStr = index>=0? str.substring(index, str.length): str;
                 typeStr = 'any'
             }
             
