@@ -189,7 +189,7 @@ export function getFuncJson(str:string):{params:{nameStr: string,typeStr: string
                 // 存在逗号，但不存在: 证明只是类型定义，返回参数名 any 即可
                 nameStr = str.substring(index,commaArr.index)
                 typeStr = 'any'
-                index += commaArr.index+1
+                index = commaArr.index+1
                 // :已经没有意义继续匹配
                 nextColonReg = false
             }
