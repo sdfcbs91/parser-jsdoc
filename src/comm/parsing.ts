@@ -145,7 +145,7 @@ export function getFuncJson(str:string):{params:{nameStr: string,typeStr: string
                 if(commaArr.index < colonArr.index){
                     nameStr = str.substring(index,commaArr.index)
                     typeStr = 'any'
-                    index += commaArr.index+1
+                    index = commaArr.index+1
                     nextColonReg = false
                 }else{
                     nextColonReg = true
@@ -165,7 +165,9 @@ export function getFuncJson(str:string):{params:{nameStr: string,typeStr: string
                         let colonJson = handelColonModel(tmpStr)
                         if(colonJson){
                             typeStr = colonJson.typeStr
-                            index += commaArr.index+1
+                            // 如果结尾的复杂结构位数大于了下一个, 那么以复杂结构的尾数为准
+                            const colonIndex = colonJson.index + index
+                            index = colonIndex>commaArr.index?colonIndex:commaArr.index+1
                             colonReg.lastIndex = index
                             commaReg.lastIndex = index
                         }else{
@@ -177,7 +179,7 @@ export function getFuncJson(str:string):{params:{nameStr: string,typeStr: string
                     }else{
                         // 没有复杂结构 则为普通的变量类型参数
                         typeStr = middleStr
-                        index = commaArr.index+1
+                        index = commaArr.index
                     }
 
                 }
@@ -189,7 +191,7 @@ export function getFuncJson(str:string):{params:{nameStr: string,typeStr: string
                 // 存在逗号，但不存在: 证明只是类型定义，返回参数名 any 即可
                 nameStr = str.substring(index,commaArr.index)
                 typeStr = 'any'
-                index = commaArr.index+1
+                index = commaArr.index
                 // :已经没有意义继续匹配
                 nextColonReg = false
             }
@@ -368,7 +370,7 @@ export function getFuncJson(str:string):{params:{nameStr: string,typeStr: string
                 //typeSymbolReg.lastIndex = 0
                 // 如果开启的位置在闭合位置（首次循环是找到的第一个结束符）的前面 那么继续查找下一个开启点位置
                 let tmpTypeSymbolRegArr = typeSymbolReg.exec(str)
-                if(tmpTypeSymbolRegArr){
+                if(tmpTypeSymbolRegArr && tmpTypeSymbolRegArr.index>typeSymbolRegArr.index){
                     typeSymbolRegArr = tmpTypeSymbolRegArr
                     num ++
                 }else{
@@ -378,6 +380,14 @@ export function getFuncJson(str:string):{params:{nameStr: string,typeStr: string
                         num = -1
                         continue
 
+                    }
+                    // num--
+                    // 查找下一个闭合点
+                    let tmpTypeSymbolEndRegArr = typeSymbolEndReg.exec(str)
+                    if(tmpTypeSymbolEndRegArr && num>0){
+                        typeSymbolEndRegArr = tmpTypeSymbolEndRegArr
+                        num--
+                        continue
                     }
                     // 结构异常 返回null
                     bool = false
