@@ -48,9 +48,11 @@ const typeSymbolEndRegStr = `[\\]\\}]{1}`
         })
         
         // 返回值
-        text += `* @returns {${fJson.resTypeStr}}\r`
+        text += `* @returns {${fJson.resTypeStr || 'any'}}\r`
         text += `*/\r`
-    }   
+    } else{
+        text += `*/\r`
+    }  
 
     return text
  }

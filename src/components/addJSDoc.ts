@@ -57,7 +57,9 @@ module.exports = function(context:vscode.ExtensionContext){
       // 返回值
       text += `* @returns {${fJson.resTypeStr}}\r`
       text += `*/\r`
-    }
+    }else{
+      text += `*/\r`
+    }  
     
     editor.edit(editBuilder => {
       // 取上一行的末尾作为插入点
