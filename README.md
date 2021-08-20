@@ -31,9 +31,9 @@ example:
 
     或者用鼠标点击，如下图
 
-   ![](/static/set1.jpg)
+   ![](https://github.com/sdfcbs91/parser-jsdoc/blob/master/static/set1.jpg)
    
-   ![](/static/set2.jpg)
+   ![](https://github.com/sdfcbs91/parser-jsdoc/blob/master/static/set2.jpg)
 
 ## Known Issues
 
