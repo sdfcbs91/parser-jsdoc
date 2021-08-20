@@ -2,7 +2,7 @@
 
 example:
 
-![](/start.gif)
+![](/static/start.gif)
 
 *  add jsdoc
 
@@ -27,6 +27,13 @@ example:
 
 - `jsdoc.author`: 添加此选项, jsdoc 将自动插入作者
 
+    Or click with the mouse, as shown below
+
+    或者用鼠标点击，如下图
+
+   ![](/static/set1.jpg)
+   
+   ![](/static/set2.jpg)
 
 ## Known Issues
 
