@@ -2,7 +2,7 @@
 
 example:
 
-![](/static/start.gif)
+![](https://github.com/sdfcbs91/parser-jsdoc/blob/master/start.gif)
 
 *  add jsdoc
 
