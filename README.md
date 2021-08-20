@@ -2,7 +2,7 @@
 
 example:
 
-![](https://github.com/sdfcbs91/parser-jsdoc/blob/master/static/start.gif)
+![](https://raw.githubusercontent.com/sdfcbs91/parser-jsdoc/master/static/start.gif)
 
 *  add jsdoc
 
@@ -31,9 +31,15 @@ example:
 
     或者用鼠标点击，如下图
 
-   ![](https://github.com/sdfcbs91/parser-jsdoc/blob/master/static/set1.jpg)
+    `step1:`
+
+   ![](https://raw.githubusercontent.com/sdfcbs91/parser-jsdoc/master/static/set1.jpg)
+
+    `step2:`
    
-   ![](https://github.com/sdfcbs91/parser-jsdoc/blob/master/static/set2.jpg)
+   ![](https://raw.githubusercontent.com/sdfcbs91/parser-jsdoc/master/static/set2.jpg)
+
+    ----------------------------------
 
 ## Known Issues
 
