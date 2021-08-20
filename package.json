@@ -14,7 +14,7 @@
 	"version": "1.0.3",
 	"icon": "logo.png",
 	"repository": {
-		"url": "https://github.com/sdfcbs91/parser-jsdoc",
+		"url": "https://github.com/sdfcbs91/parser-jsdoc/tree/master",
 		"type": "git"
 	},
 	"engines": {
