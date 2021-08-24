@@ -55,9 +55,10 @@ module.exports = function(context:vscode.ExtensionContext){
       })
 
       // 返回值
-      text += `* @returns {${fJson.resTypeStr}}\r`
+      text += `* @returns {${fJson.resTypeStr||'any'}}\r`
       text += `*/\r`
     }else{
+      text += '* @returns {any}\r'
       text += `*/\r`
     }  
     
