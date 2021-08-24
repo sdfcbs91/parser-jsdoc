@@ -8,9 +8,9 @@
 // 返回类型
 // :any  \s*(:\w+)*
 const resRegStrOr = `\\s*(:(\\w|\\[|\\]|\\{|\\}|\\:)+)*`
-//const resRegStr = `\\s*:(\\w|\\[|\\]|\\{|\\}|\\:)+`
+const resRegStr = `\\s*:(\\w|\\[|\\]|\\{|\\}|\\:)+`
 // (param:xx,param:xx)
-const paramRegStr = `(\\([^(^)]*\\))`
+const paramRegStr = `(\\([^(^)]+\\))`
 // ?:sombody[] 
 //const paramEndReg = /[?]{0,1}\:(\s)*\w+(\[\])*/g
 // ?:
@@ -73,7 +73,16 @@ export function getFuncJson(str:string):{params:{nameStr: string,typeStr: string
     const m = str.match(new RegExp(paramRegStr+resRegStrOr,'g'))
 
     if(!m) {
-        return null
+        const res = str.match(new RegExp(resRegStr,'g'))
+        // 判断有没有返回类型,如果有返回类型进行获取并返回
+        if(res){
+            return {
+                params:[],
+                resTypeStr:res[0].replace(':','')
+            }
+        }else{
+            return null
+        }
     }
     // 获取(xxx,xxx)形式的参数
     const paramArr = m[0].match(new RegExp(paramRegStr))
