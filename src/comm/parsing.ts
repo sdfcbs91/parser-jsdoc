@@ -19,6 +19,8 @@ const paramRegStr = `(\\([^(^)]+\\))`
 const typeSymbolRegStr = `[\\[\\{]{1}`
 // [{ 参数类型中可能包含符号
 const typeSymbolEndRegStr = `[\\]\\}]{1}`
+// {xxx}格式的参数
+const bigPranRegStr = `\\{[^\\}]*\\}`
 
 /**
  * 
@@ -90,7 +92,7 @@ export function getFuncJson(str:string):{params:{nameStr: string,typeStr: string
         return null
     }
     // 如果有类型返回，那么就获取并设置resTypeStr
-    if(m[0].length>paramArr[0].length){
+    if(m[0].trim().length>paramArr[0].trim().length){
         let resLen = m[0].length;
         // 类型可能是{结尾,进行排除
         if(m[0].match(new RegExp(/\{$/))){
@@ -119,7 +121,7 @@ export function getFuncJson(str:string):{params:{nameStr: string,typeStr: string
      let paramArr = []
      let colonReg = /(\?)?\:/g
      let commaReg = /\,/g
-     
+     const bigPranReg = new RegExp(bigPranRegStr,'g')     
 
      //去掉可能的()
      str = str.replace(/^\(/,'').replace(/\)$/,'')
@@ -140,6 +142,7 @@ export function getFuncJson(str:string):{params:{nameStr: string,typeStr: string
      let nextCommaColonReg = true
      let colonArr = null
      let commaArr = null
+     let prantArr = null
      while(bool){
         // :
         if(nextColonReg === true){
@@ -200,9 +203,24 @@ export function getFuncJson(str:string):{params:{nameStr: string,typeStr: string
                 }
             }else{
                 // 存在逗号，但不存在: 证明只是类型定义，返回参数名 any 即可
-                nameStr = str.substring(index,commaArr.index)
-                typeStr = 'any'
-                index = commaArr.index+1
+                // 匹配可能的{xxx}
+                prantArr = bigPranReg.exec(str);
+                if(prantArr){
+                    let prantEnd = prantArr.index+prantArr[0].length
+                    let endIndex = prantEnd>commaArr.index?prantEnd:commaArr.index
+                    nameStr = "obj" 
+                    typeStr = str.substring(index,endIndex)
+                    index = endIndex+1
+                }else if(index<commaArr.index){
+                    nameStr = str.substring(index,commaArr.index)
+                    
+                    index = commaArr.index+1
+                    typeStr = 'any'
+                }else{
+                    // 如果逻辑进行到这里，那么表示,还在{}之前，继续进行while循环
+                    continue
+                }
+                
                 // :已经没有意义继续匹配
                 nextColonReg = false
             }
@@ -250,10 +268,12 @@ export function getFuncJson(str:string):{params:{nameStr: string,typeStr: string
             
         }
 
-        paramArr.push({
-            nameStr,
-            typeStr
-        })
+        if(nameStr.length>0){
+            paramArr.push({
+                nameStr,
+                typeStr
+            })
+        }
 
     }
      
