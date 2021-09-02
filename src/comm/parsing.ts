@@ -268,7 +268,7 @@ export function getFuncJson(str:string):{params:{nameStr: string,typeStr: string
             
         }
 
-        if(nameStr.length>0){
+        if(nameStr.trim().length>0 && typeStr.trim().length>0){
             paramArr.push({
                 nameStr,
                 typeStr
