@@ -11,7 +11,7 @@
 		"parser",
 		"standard"
 	],
-	"version": "1.0.8",
+	"version": "1.0.9",
 	"icon": "logo.png",
 	"repository": {
 		"url": "https://github.com/sdfcbs91/parser-jsdoc/tree/master",
@@ -59,7 +59,7 @@
 		"watch": "tsc -watch -p ./",
 		"postinstall": "node ./node_modules/vscode/bin/install",
 		"test": "npm run compile && node ./node_modules/vscode/bin/test",
-		"package": "vsce package"
+		"package": "npm run compile && vsce package"
 	},
 	"devDependencies": {
 		"@types/mocha": "^2.2.48",

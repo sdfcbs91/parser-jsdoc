@@ -20,7 +20,7 @@ const typeSymbolRegStr = `[\\[\\{]{1}`
 // [{ 参数类型中可能包含符号
 const typeSymbolEndRegStr = `[\\]\\}]{1}`
 // {xxx}格式的参数
-const bigPranRegStr = `\\{[^\\}]*\\}`
+const bigPranRegStr = `\\{[^\\{}]*\\}`
 
 /**
  * 
@@ -140,9 +140,48 @@ export function getFuncJson(str:string):{params:{nameStr: string,typeStr: string
      let nextColonReg = true
      // ,往后遍历
      let nextCommaColonReg = true
-     let colonArr = null
-     let commaArr = null
+     let colonArr:any = null
+     let commaArr:any = null
      let prantArr = null
+
+    // 匹配 xxx,xxx | {xxxx} | xxx 的格式
+    const matchBigPrant = ()=>{
+        prantArr = bigPranReg.exec(str);
+        if(commaArr){
+            // 是否包含:
+            if(!colonArr){
+                if(prantArr){
+                    let prantEnd = prantArr.index+prantArr[0].length
+                    let endIndex = prantEnd>commaArr.index?prantEnd:commaArr.index
+                    nameStr = "obj" 
+                    typeStr = str.substring(index,endIndex)
+                    index = endIndex+1
+                    
+                }else if(index<commaArr.index){
+                    nameStr = str.substring(index,commaArr.index)
+                    
+                    index = commaArr.index+1
+                    typeStr = 'any'
+                }else{
+                    // 如果逻辑进行到这里，那么表示,还在{}之前，继续进行while循环
+                    return false
+                }
+            }else{
+                // 必须{}的开始位置在,之前 结束在,之后
+                if(prantArr && prantArr.index<commaArr.index){
+                    let prantEnd = prantArr.index+prantArr[0].length
+                    if(prantEnd >commaArr.index){
+                        nameStr = "obj" 
+                        typeStr = str.substring(prantArr.index,prantEnd)
+                        index = prantEnd+1
+                        return true
+                    }
+                }
+                return false
+            }
+        }
+        return true
+    }
      while(bool){
         // :
         if(nextColonReg === true){
@@ -155,12 +194,19 @@ export function getFuncJson(str:string):{params:{nameStr: string,typeStr: string
         //是否存在, 存在,再进行判断 ,:的前后顺序
         if(commaArr){
             if(colonArr){
-                // 如果,在:之前 那么就证明前一次的参数没有定义类型   xxx,xxx:xxx
+                // 如果,在:之前 那么就证明前一次的参数没有定义类型   xxx,xxx:xxx  {xxx,xxx},xxx:xxx
                 if(commaArr.index < colonArr.index){
-                    nameStr = str.substring(index,commaArr.index)
-                    typeStr = 'any'
-                    index = commaArr.index+1
                     nextColonReg = false
+
+                    let bool = matchBigPrant()
+                    if(bool === false){
+                        nameStr = str.substring(index,commaArr.index)
+                        typeStr = 'any'
+                        index = commaArr.index+1
+                    }else{
+                        commaReg.lastIndex = index
+                    }
+                   
                 }else{
                     nextColonReg = true
                     // :在,之前 证明该次的参数有类型定义
@@ -202,27 +248,12 @@ export function getFuncJson(str:string):{params:{nameStr: string,typeStr: string
                     nameStr =  `[${nameStr}]`
                 }
             }else{
-                // 存在逗号，但不存在: 证明只是类型定义，返回参数名 any 即可
-                // 匹配可能的{xxx}
-                prantArr = bigPranReg.exec(str);
-                if(prantArr){
-                    let prantEnd = prantArr.index+prantArr[0].length
-                    let endIndex = prantEnd>commaArr.index?prantEnd:commaArr.index
-                    nameStr = "obj" 
-                    typeStr = str.substring(index,endIndex)
-                    index = endIndex+1
-                }else if(index<commaArr.index){
-                    nameStr = str.substring(index,commaArr.index)
-                    
-                    index = commaArr.index+1
-                    typeStr = 'any'
-                }else{
-                    // 如果逻辑进行到这里，那么表示,还在{}之前，继续进行while循环
-                    continue
-                }
-                
                 // :已经没有意义继续匹配
                 nextColonReg = false
+                // 存在逗号，但不存在: 证明只是类型定义，返回参数名 any 即可
+                // 匹配可能的{xxx}
+                matchBigPrant()
+                
             }
             
         }else{
@@ -267,6 +298,9 @@ export function getFuncJson(str:string):{params:{nameStr: string,typeStr: string
             }
             
         }
+
+        // 去掉可能的前后,
+        nameStr = nameStr.replace(/^,/,'').replace(/,$/,'')
 
         if(nameStr.trim().length>0 && typeStr.trim().length>0){
             paramArr.push({
