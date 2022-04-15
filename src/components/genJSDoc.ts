@@ -13,7 +13,6 @@ module.exports = function(context:vscode.ExtensionContext){
     }
     
 
-
     // 获取 selection 对象(其中包含当前选择的行与字符)
     const selection = editor.selection
 
@@ -26,8 +25,6 @@ module.exports = function(context:vscode.ExtensionContext){
     // 获取选中的内容
     const selectionText = editor.document.getText(range)
     
-    //const paramList = m[1].replace(/[\t\s\r]/g, '').split(',').filter(s => s !== '')
-
     let text = '/**\r'
     text += `* 描述\r`
 
@@ -40,9 +37,23 @@ module.exports = function(context:vscode.ExtensionContext){
     text += `* @date ${getFormatDate('YYYY-MM-DD',new Date())}\r`
 
     // 选中内容的参数
-    console.log(34,selectionText,selection)
-    const { funInfoArr } = getJsInfo(selectionText) //'function updateChartData(bundleStats:string[]):string {'
-    if(funInfoArr.length>0){
+    let funInfoArr:any = [];
+    let boolInfo = false
+    try{
+      const info = getJsInfo(selectionText) 
+      funInfoArr = info.funInfoArr
+      boolInfo = true
+    }catch(error){
+      boolInfo = false
+    }
+    if(boolInfo === false){
+      vscode.window.showErrorMessage('sorry, syntax parsing error !',{
+        modal:false
+      });
+      return false
+    }
+    
+    if( funInfoArr.length>0){
       const info = funInfoArr[0]
       // 参数
       text += info.params
@@ -50,11 +61,10 @@ module.exports = function(context:vscode.ExtensionContext){
       if(info.returns){
         text += `* @returns {${info.returns}}\r`
       } 
-      text += `*/\r`
     }
-    console.log(35,funInfoArr)
+    // 结尾
+    text += `*/\r`
 
-    
     editor.edit(editBuilder => {
       // 取上一行的末尾作为插入点
       const selectionLine = editor.document.lineAt(selection.start.line)
@@ -69,5 +79,9 @@ module.exports = function(context:vscode.ExtensionContext){
 
       // 插入注释
       editBuilder.insert(insertPosition, text)
+
+      vscode.window.showInformationMessage('success',{
+          modal:false
+      });
     });
 }

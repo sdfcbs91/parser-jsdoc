@@ -1,7 +1,5 @@
 import { parse } from '@typescript-eslint/typescript-estree';
 
-import { window } from 'vscode';
-
 const lSymbolReg = '(\\{|\\[|\\()'
 const rSymbolReg = '(\\}|\\]|\\))'
 
@@ -26,12 +24,6 @@ export const getJsInfo=(str:string)=>{
     const funAst = astTFunAst(ast,text)
 
     const funInfoArr = funArrAstText(funAst)
-
-
-
-    window.showInformationMessage('success',{
-        modal:false
-    });
     
     return {
         funAst,funInfoArr
