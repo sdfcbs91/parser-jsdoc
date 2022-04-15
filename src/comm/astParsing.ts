@@ -16,7 +16,7 @@ export const getJsInfo=(str:string)=>{
     // 把可能断句的代码补齐括号
     const text = fillSymbolStr(str)
   
-    const ast = parse(text, {
+    const ast:any = parseSelf(text, {
         loc: true,
         range: true,
     }); 
@@ -29,6 +29,20 @@ export const getJsInfo=(str:string)=>{
         funAst,funInfoArr
     }
 } 
+
+const parseSelf = (text:string,option:any):any=>{
+    try{
+        return parseBlock(text,option)
+    }catch(error){
+        // 尝试一次把对象内函数转成单一函数
+        text = "function "+text.replace(/\:\s*function/g,'')
+        return parseBlock(text,option)
+    }
+}
+
+const parseBlock = (text:string,option:any):any=>{
+    return parse(text, option); 
+}
 
 // 获取字符串解析的内容
 const getSymbolStr = (reg:string,text:string):string=>{
@@ -90,6 +104,7 @@ const astTFunAst = (ast:any,text:string)=>{
     const arr = []
     for(let i=0;i<ast.body.length;i++){
         const item = ast.body[i];
+        // 普通函数
         if(item.type === 'FunctionDeclaration'){
             const tmp = {
                 name:item.id.name,
@@ -98,26 +113,59 @@ const astTFunAst = (ast:any,text:string)=>{
             }
             arr.push(tmp)
             // params
-            for(let j=0;j<item.params.length;j++){
-                const parm = item.params[j]
-                if(parm.typeAnnotation){
-                    const range = parm.typeAnnotation.range
-                    parm.typeText = text.substring(range[0]+1,range[1])
-                }
-                tmp.params.push({
-                    typeText:parm.typeText||'',
-                    name:parm.name
-                })
-            }
+            walkParams(item.params,text,(info:any)=>{
+                tmp.params.push(info)
+            })
             // returns
             if(item.returnType){
                 const range = item.returnType.range
                 tmp.returnText = text.substring(range[0]+1,range[1])
             }
+            // 变量
+        }else if(item.type === 'VariableDeclaration'){
+            for(let j=0;j<item.declarations.length;j++){
+                const fItem = item.declarations[j]
+                
+                if(fItem.init){
+                    const sItem = fItem.init
+                    // 箭头函数
+                    if(sItem.type === 'ArrowFunctionExpression'){
+                        const tmp = {
+                            name:fItem.id.name,
+                            params:[] as any,
+                            returnText:''
+                        }
+                        arr.push(tmp)
+                        walkParams(sItem.params,text,(info:any)=>{
+                            tmp.params.push(info)
+                        })
+                        if(sItem.returnType){
+                            const range = sItem.returnType.range
+                            tmp.returnText = text.substring(range[0]+1,range[1])
+                        }
+                    }
+                }
+            }
         }
     }
     return {
         body:arr
+    }
+}
+
+const walkParams = (params:any,text:string,call:Function)=>{
+    for(let j=0;j<params.length;j++){
+        const parm = params[j]
+        if(parm.typeAnnotation){
+            const range = parm.typeAnnotation.range
+            parm.typeText = text.substring(range[0]+1,range[1])
+        }
+        if(call){
+            call({
+                typeText:parm.typeText||'',
+                name:parm.name
+            })
+        }
     }
 }
 

@@ -1,4 +1,4 @@
-import * as vscode from 'vscode'
+import {workspace, ExtensionContext, window, Range, Position} from 'vscode'
 import {getFormatDate} from '../comm/date';
 import {getJsInfo} from '../comm/astParsing'
 
@@ -6,8 +6,8 @@ import {getJsInfo} from '../comm/astParsing'
  * addJSDoc 根据选中都函数参数，进行文档注释
  * @param {*} context vscode插件上下文
  */
-module.exports = function(context:vscode.ExtensionContext){
-    const editor = vscode.window.activeTextEditor
+module.exports = function(context:ExtensionContext){
+    const editor = window.activeTextEditor
     if (!editor) {
       return
     }
@@ -17,9 +17,9 @@ module.exports = function(context:vscode.ExtensionContext){
     const selection = editor.selection
 
     // 获取当前整个一行的代码
-    const range = new vscode.Range(
-        new vscode.Position(selection.start.line,0),
-        new vscode.Position(selection.start.line+1,0)
+    const range = new Range(
+        new Position(selection.start.line,0),
+        new Position(selection.start.line+1,0)
     )
           
     // 获取选中的内容
@@ -29,7 +29,7 @@ module.exports = function(context:vscode.ExtensionContext){
     text += `* 描述\r`
 
     // 作者
-    const configuration = vscode.workspace.getConfiguration('jsdoc');
+    const configuration = workspace.getConfiguration('jsdoc');
     const author = configuration.get('author') || ''
     author && (text += `* @author ${author}\r`)
 
@@ -47,7 +47,7 @@ module.exports = function(context:vscode.ExtensionContext){
       boolInfo = false
     }
     if(boolInfo === false){
-      vscode.window.showErrorMessage('sorry, syntax parsing error !',{
+      window.showErrorMessage('sorry, syntax parsing error !',{
         modal:false
       });
       return false
@@ -80,7 +80,7 @@ module.exports = function(context:vscode.ExtensionContext){
       // 插入注释
       editBuilder.insert(insertPosition, text)
 
-      vscode.window.showInformationMessage('success',{
+      window.showInformationMessage('success',{
           modal:false
       });
     });

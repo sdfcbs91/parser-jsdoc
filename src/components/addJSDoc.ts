@@ -1,4 +1,4 @@
-import * as vscode from 'vscode'
+import {workspace,ExtensionContext,window} from 'vscode'
 import {getFormatDate} from '../comm/date';
 import {getFuncJson} from '../comm/parsing'
 
@@ -6,8 +6,8 @@ import {getFuncJson} from '../comm/parsing'
  * addJSDoc 根据选中都函数参数，进行文档注释
  * @param {*} context vscode插件上下文
  */
-module.exports = function(context:vscode.ExtensionContext){
-    const editor = vscode.window.activeTextEditor
+module.exports = function(context:ExtensionContext){
+    const editor = window.activeTextEditor
     if (!editor) {
       return
     }
@@ -39,7 +39,7 @@ module.exports = function(context:vscode.ExtensionContext){
     text += `* 描述\r`
 
     // 作者
-    const configuration = vscode.workspace.getConfiguration('jsdoc');
+    const configuration = workspace.getConfiguration('jsdoc');
     const author = configuration.get('author') || ''
     author && (text += `* @author ${author}\r`)
 
