@@ -41,22 +41,33 @@ module.exports = function(context:vscode.ExtensionContext){
 
     // 选中内容的参数
     console.log(34,selectionText,selection)
-    let fJson = getJsInfo('function updateChartData(bundleStats:string[]) {')
-    console.log(35,fJson)
-    return;
-    // editor.edit(editBuilder => {
-    //   // 取上一行的末尾作为插入点
-    //   const selectionLine = editor.document.lineAt(selection.start.line)
-    //   const insertPosition = selectionLine.range.start
-      
-    //   // 填充行头的空格
-    //   const whitespace = selectionLine.firstNonWhitespaceCharacterIndex
-    //   const padSpaceStr = ' '.repeat(whitespace)
-    //   text = text.replace(/\r/g, `\r${padSpaceStr} `)
-    //   text = `${padSpaceStr}${text}`
-    //   text = text.slice(0, text.length - whitespace - 1)
+    const { funInfoArr } = getJsInfo(selectionText) //'function updateChartData(bundleStats:string[]):string {'
+    if(funInfoArr.length>0){
+      const info = funInfoArr[0]
+      // 参数
+      text += info.params
+      // returns
+      if(info.returns){
+        text += `* @returns {${info.returns}}\r`
+      } 
+      text += `*/\r`
+    }
+    console.log(35,funInfoArr)
 
-    //   // 插入注释
-    //   editBuilder.insert(insertPosition, text)
-    // });
+    
+    editor.edit(editBuilder => {
+      // 取上一行的末尾作为插入点
+      const selectionLine = editor.document.lineAt(selection.start.line)
+      const insertPosition = selectionLine.range.start
+      
+      // 填充行头的空格
+      const whitespace = selectionLine.firstNonWhitespaceCharacterIndex
+      const padSpaceStr = ' '.repeat(whitespace)
+      text = text.replace(/\r/g, `\r${padSpaceStr} `)
+      text = `${padSpaceStr}${text}`
+      text = text.slice(0, text.length - whitespace - 1)
+
+      // 插入注释
+      editBuilder.insert(insertPosition, text)
+    });
 }

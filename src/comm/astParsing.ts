@@ -1,6 +1,6 @@
-// const acorn = require('acorn');
 import { parse } from '@typescript-eslint/typescript-estree';
-// const walk = require('walk').walk;
+
+import { window } from 'vscode';
 
 const lSymbolReg = '(\\{|\\[|\\()'
 const rSymbolReg = '(\\}|\\]|\\))'
@@ -15,17 +15,26 @@ revertSymbolMap.set(')','(')
 
 
 export const getJsInfo=(str:string)=>{
-   // const ast = acorn.parse(str, { ecmaVersion: 2020, sourceType: 'module' });
-   const text = fillSymbolStr(str)
-   console.log(text)
-    parse(text, {
+    // 把可能断句的代码补齐括号
+    const text = fillSymbolStr(str)
+  
+    const ast = parse(text, {
         loc: true,
         range: true,
     }); 
 
+    const funAst = astTFunAst(ast,text)
+
+    const funInfoArr = funArrAstText(funAst)
+
+
+
+    window.showInformationMessage('success',{
+        modal:false
+    });
     
     return {
-
+        funAst,funInfoArr
     }
 } 
 
@@ -82,4 +91,65 @@ const reverseString = (str:string):string =>{
     }
    
     return newStr; 
+}
+
+// 解析ts的ast,拼凑成函数注释的ast
+const astTFunAst = (ast:any,text:string)=>{
+    const arr = []
+    for(let i=0;i<ast.body.length;i++){
+        const item = ast.body[i];
+        if(item.type === 'FunctionDeclaration'){
+            const tmp = {
+                name:item.id.name,
+                params:[] as any,
+                returnText:''
+            }
+            arr.push(tmp)
+            // params
+            for(let j=0;j<item.params.length;j++){
+                const parm = item.params[j]
+                if(parm.typeAnnotation){
+                    const range = parm.typeAnnotation.range
+                    parm.typeText = text.substring(range[0]+1,range[1])
+                }
+                tmp.params.push({
+                    typeText:parm.typeText||'',
+                    name:parm.name
+                })
+            }
+            // returns
+            if(item.returnType){
+                const range = item.returnType.range
+                tmp.returnText = text.substring(range[0]+1,range[1])
+            }
+        }
+    }
+    return {
+        body:arr
+    }
+}
+
+const funArrAstText = (funAst:any)=>{
+    const arr = []
+    for(let i =0;i<funAst.body.length;i++){
+        const tmp = {
+            params:'',
+            returns:''
+        }
+        const item = funAst.body[i]
+        let str = ""
+        // params
+        item.params.forEach((par:any)=>{
+            let typeText = ""
+            if(par.typeText){
+                typeText = `{${par.typeText}} `
+            }
+            str += `* @param ${typeText}${par.name}\r`
+        })
+        tmp.params = str
+        // returns
+        tmp.returns = `${item.returnText}`
+        arr.push(tmp)
+    }
+    return arr
 }
