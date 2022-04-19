@@ -11,7 +11,7 @@
 		"parser",
 		"standard"
 	],
-	"version": "1.1.2",
+	"version": "1.1.3",
 	"icon": "logo.png",
 	"repository": {
 		"url": "https://github.com/sdfcbs91/parser-jsdoc/tree/master",
