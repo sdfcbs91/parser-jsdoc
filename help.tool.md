@@ -1,5 +1,7 @@
 https://marketplace.visualstudio.com/manage/publishers/winkchen
 
+qq mail
+
 vsce package 本地打包  [npm run package] 
 
 publish of node v16.12.0
