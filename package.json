@@ -13,10 +13,6 @@
 	],
 	"version": "1.1.4",
 	"icon": "logo.png",
-	"repository": {
-		"url": "https://github.com/sdfcbs91/parser-jsdoc/tree/master",
-		"type": "git"
-	},
 	"engines": {
 		"vscode": "^1.30.0"
 	},
