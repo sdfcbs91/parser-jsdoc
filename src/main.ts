@@ -16,11 +16,7 @@ module.exports = (context:vscode.ExtensionContext):any=>{
     vscode.commands.registerCommand('extension.addJSDoc',require("./components/genJSDoc"))
   );
   // 注册 initJSDoc
-  context.subscriptions.push(
-    vscode.commands.registerCommand('extension.initJSDoc',require("./components/initJSDoc"))
-  );
-  // 注册 genJSDoc
   // context.subscriptions.push(
-  //   vscode.commands.registerCommand('extension.genJSDoc',require("./components/genJSDoc"))
+  //   vscode.commands.registerCommand('extension.initJSDoc',require("./components/initJSDoc"))
   // );
 }
