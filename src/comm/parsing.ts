@@ -32,7 +32,7 @@ const bigPranRegStr = `\\{[^\\{}]*\\}`
     // 
     let fJson = getFuncJson(str)
     text = '/**\r'
-    text += `* 描述\r`
+    text += `* desc\r`
 
     // 作者
     const configuration = vscode.workspace.getConfiguration('jsdoc');

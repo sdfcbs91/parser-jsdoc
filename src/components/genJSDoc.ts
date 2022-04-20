@@ -44,7 +44,7 @@ module.exports = function (context: ExtensionContext) {
 
 
   let text = '/**\r'
-  text += `* 描述\r`
+  text += `* desc\r`
 
   // 作者
   const configuration = workspace.getConfiguration('jsdoc');

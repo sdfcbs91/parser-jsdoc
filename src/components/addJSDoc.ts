@@ -36,7 +36,7 @@ module.exports = function(context:ExtensionContext){
     //const paramList = m[1].replace(/[\t\s\r]/g, '').split(',').filter(s => s !== '')
 
     let text = '/**\r'
-    text += `* 描述\r`
+    text += `* desc\r`
 
     // 作者
     const configuration = workspace.getConfiguration('jsdoc');

@@ -1,6 +1,9 @@
+ // 普通函数 类声明的内置函数 箭头函数
+const inNodeTypeArr = ['FunctionDeclaration','FunctionExpression','ArrowFunctionExpression'];
+
 export const astParseNode = (node: any, text: string):any => {
-    // 普通函数 类声明的内置函数
-    if (node.type === 'FunctionDeclaration' || node.type === 'FunctionExpression') {
+   
+    if (inNodeTypeArr.indexOf(node.type)>-1) {
         const tmp = {
             name: node.id?node.id.name:'',
             params: [] as any,
@@ -13,34 +16,16 @@ export const astParseNode = (node: any, text: string):any => {
         })
         // returns
         if (node.returnType) {
-            const range = node.returnType.range
-            tmp.returnText = text.substring(range[0] + 1, range[1])
+            tmp.returnText = walkReturnType(node.returnType, text)
         }
         return tmp
         // 变量
     } else if (node.type === 'VariableDeclaration') {
-        for (let j = 0; j < node.declarations.length; j++) {
-            const fItem = node.declarations[j]
-
+        // 默认找第一个变量,并进行解析
+        if(node.declarations && node.declarations.length>0){
+            const fItem = node.declarations[0]
             if (fItem.init) {
-                const sItem = fItem.init
-                // 箭头函数
-                if (sItem.type === 'ArrowFunctionExpression') {
-                    const tmp = {
-                        name: fItem.id.name,
-                        params: [] as any,
-                        returnText: ''
-                    }
-
-                    walkParams(sItem.params, text, (info: any) => {
-                        tmp.params.push(info)
-                    })
-                    if (sItem.returnType) {
-                        const range = sItem.returnType.range
-                        tmp.returnText = text.substring(range[0] + 1, range[1])
-                    }
-                    return tmp
-                }
+                return astParseNode(fItem.init, text)
             }
         }
         // 对象方法
@@ -86,3 +71,10 @@ const walkParams = (params: any, text: string, call: Function) => {
         }
     }
 }
+
+// 生成return类容
+const walkReturnType = (returnType:any,  text: string)=>{
+    const range = returnType.range
+    return text.substring(range[0] + 1, range[1])
+}
+           
