@@ -62,11 +62,23 @@ const walkParams = (params: any, text: string, call: Function) => {
         if (parm.typeAnnotation) {
             const range = parm.typeAnnotation.range
             parm.typeText = text.substring(range[0] + 1, range[1])
+        }else if(parm.range){
+            let start = parm.range[0]
+            let end = parm.range[1]
+
+            // 存在json结构入参
+            if(parm.type === 'ObjectPattern' ){
+                // 无需{}
+                start += 1
+                end -= 1
+            }
+            parm.typeText = text.substring(start, end)
         }
+       
         if (call) {
             call({
                 typeText: parm.typeText || '',
-                name: parm.name
+                name: parm.name || `parm${(j+1)}`
             })
         }
     }
