@@ -77,7 +77,7 @@ const walkParams = (params: any, text: string, call: Function) => {
        
         if (call) {
             call({
-                typeText: parm.typeText || '',
+                typeText: parm.typeText || '*',
                 name: parm.name || `parm${(j+1)}`
             })
         }
