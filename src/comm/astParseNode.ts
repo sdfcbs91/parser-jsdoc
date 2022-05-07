@@ -1,11 +1,11 @@
  // 普通函数 类声明的内置函数 箭头函数
 const inNodeTypeArr = ['FunctionDeclaration','FunctionExpression','ArrowFunctionExpression'];
 
-export const astParseNode = (node: any, text: string):any => {
+export const astParseNode = (node: any, text: string, name:string = ""):any => {
    
     if (inNodeTypeArr.indexOf(node.type)>-1) {
         const tmp = {
-            name: node.id?node.id.name:'',
+            name: (node.id?node.id.name:'')||name,
             params: [] as any,
             returnText: ''
         }
@@ -28,6 +28,10 @@ export const astParseNode = (node: any, text: string):any => {
                 return astParseNode(fItem.init, text)
             }
         }
+        // 属性
+    }else if(node.type === 'Property' && node.value){
+        return astParseNode(node.value, text, node.key.name)
+        
         // 对象方法
     } else if(node.type === 'MethodDefinition'){
         if(node.value){

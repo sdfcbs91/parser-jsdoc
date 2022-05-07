@@ -23,7 +23,7 @@ const visit = (node:any, parent:any, prop:string, index:number, option:any)=>{
             }) === false;
 
             if(breakBool === false){
-                let child= node.body || node.declarations || node.declaration || node.callee || node.object
+                let child= node.body || node.declarations || node.declaration || node.callee || node.object || node.init || node.properties
 
                 if(child){
                     if(child.constructor === Array){
