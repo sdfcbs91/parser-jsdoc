@@ -11,7 +11,7 @@
 		"parser",
 		"standard"
 	],
-	"version": "1.1.5",
+	"version": "1.1.6",
 	"icon": "logo.png",
 	"engines": {
 		"vscode": "^1.30.0"
