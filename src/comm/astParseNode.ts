@@ -2,7 +2,7 @@
 const inNodeTypeArr = ['FunctionDeclaration','FunctionExpression','ArrowFunctionExpression'];
 
 export const astParseNode = (node: any, text: string, name:string = ""):any => {
-   
+    // 进行函数判断和解析
     if (inNodeTypeArr.indexOf(node.type)>-1) {
         const tmp = {
             name: (node.id?node.id.name:'')||name,
@@ -55,6 +55,9 @@ export const astParseNode = (node: any, text: string, name:string = ""):any => {
         if(node.right){
             return astParseNode(node.right,text)
         }
+        // 属性定义（class下）
+    }else if(node.type === 'PropertyDefinition' && node.value){
+        return astParseNode(node.value, text, node.key.name)
     }
     return null
 }

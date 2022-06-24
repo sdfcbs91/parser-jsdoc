@@ -43,3 +43,6 @@
 
 * 2022.05.07 (v1.1.6)
     *  优化 `add jsdoc` 增加 属性Property value是函数形式的定义
+
+* 2022.06.24 (v1.1.7)
+    *  增加支持 "PropertyDefinition" 类型的方法定义
