@@ -2,16 +2,19 @@ import {
   workspace,
   ExtensionContext,
   window,
-  // Range,
-  // Position
 } from 'vscode'
+
 import {
   getFormatDate
-} from '../comm/date';
+} from '../comm/date'
+
 import {
   getJsArr
 } from '../comm/astParsing'
 
+import {
+  hasComments
+}from '../comm/rangeDoc'
 /**
  * initJSDoc 把当前文件下所有的函数进行一次函数注释
  * @param {*} context vscode插件上下文
@@ -65,6 +68,10 @@ module.exports = function(context: ExtensionContext){
         const node = arrInfo[i].node
         const arrText = arrInfo[i].arr
         if (!arrText || arrText.length <1) {
+          continue
+        }
+        // 判断节点是否已被注释，如果被注释 则不再注释
+        if(hasComments(allText,node)){
           continue
         }
         let str = text
@@ -147,4 +154,6 @@ module.exports = function(context: ExtensionContext){
   //   });
   //   vscode.window.showInformationMessage('Documentation comments are added!\r\n文档注释完成添加！');
 }
+
+
 
