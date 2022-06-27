@@ -88,6 +88,9 @@ module.exports = function (context: ExtensionContext) {
         // 插入注释
         editBuilder.insert(insertPosition, str);
       }
+      window.showInformationMessage("success", {
+        modal: false,
+      });
     });
   }
 };
