@@ -15,13 +15,11 @@ import {
 import {
   hasComments
 }from '../comm/rangeDoc'
+
 /**
  * initJSDoc 把当前文件下所有的函数进行一次函数注释
  * @param {*} context vscode插件上下文
  */
-
-
-
 module.exports = function(context: ExtensionContext){
   const editor = window.activeTextEditor
   if (!editor) {

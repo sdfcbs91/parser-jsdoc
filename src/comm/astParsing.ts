@@ -196,8 +196,9 @@ const astParseNodesText = (arr: any): Array<{params: string,returns: string}>=> 
 
 export const getJsArr = (allStr: string)=>{
     const nodesTextInfo:Array<nodeTextInfo> = []
+    const indexMap:any = {}
 
-    const ast: any = parse(allStr, {
+    const ast:any = parse(allStr, {
         loc: true,
         range: true,
         jsx: true,
@@ -209,12 +210,17 @@ export const getJsArr = (allStr: string)=>{
             enter(opt: any) {
                 const node = opt.node
                if(inParseNodes.indexOf(node.type)>-1){
+                   // node去重
+                   if(indexMap[node.loc.start.line]){
+                       return
+                   }
                     let info = astParseNode(node, allStr);
                     if(info){
                         nodesTextInfo.push({
                             node,
                             arr:astParseNodesText([info])
                         })
+                        indexMap[node.loc.start.line] = true
                     }
                }
             }
