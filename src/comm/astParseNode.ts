@@ -1,5 +1,20 @@
  // 普通函数 类声明的内置函数 箭头函数
-const inNodeTypeArr = ['FunctionDeclaration','FunctionExpression','ArrowFunctionExpression'];
+export const inNodeTypeArr:Array<String> = [
+    'FunctionDeclaration',
+    'FunctionExpression',
+    'ArrowFunctionExpression',
+];
+
+// 可能的可以继续解析的node类型
+export const inParseNodeArr:Array<String> = [
+    'VariableDeclaration',
+    'Property',
+    'MethodDefinition',
+    'ExportNamedDeclaration',
+    'ExpressionStatement',
+    'AssignmentExpression',
+    'PropertyDefinition'
+]
 
 export const astParseNode = (node: any, text: string, name:string = ""):any => {
     // 进行函数判断和解析

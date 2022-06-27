@@ -22,7 +22,6 @@ module.exports = function (context: ExtensionContext) {
     return
   }
 
-
   // 获取 selection 对象(其中包含当前选择的行与字符)
   const selection = editor.selection
 
@@ -38,10 +37,6 @@ module.exports = function (context: ExtensionContext) {
 
   // 获取选中的内容
   const selectionText = editor.document.getText(range)
-
-
-
-
 
   let text = '/**\r'
   text += `* desc\r`

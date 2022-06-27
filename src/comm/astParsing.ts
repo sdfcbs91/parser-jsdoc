@@ -6,7 +6,11 @@ import {
     walk
 } from './typeScriptWalk'
 
-import { astParseNode} from './astParseNode'
+import { 
+    astParseNode,
+    inNodeTypeArr,
+    inParseNodeArr
+} from './astParseNode'
 
 import {
     Range
@@ -23,6 +27,14 @@ revertSymbolMap.set('}', '{')
 revertSymbolMap.set(']', '[')
 revertSymbolMap.set(')', '(')
 
+// node可能解析函数的类型
+const inParseNodes = inParseNodeArr.concat(inNodeTypeArr)
+
+interface nodeTextInfo {
+    node:Object,
+    arr:Array<{params: string,returns: string}>
+}
+
 
 export const getLineInfo = (str: string) => {
     // 把可能断句的代码补齐括号
@@ -36,7 +48,6 @@ export const getLineInfo = (str: string) => {
     const arr = astParseNodes(ast, text)
 
     return astParseNodesText(arr)
-
 }
 
 export const getJsInfo = (allStr: string, range: Range, selectionText: string) => {
@@ -56,7 +67,7 @@ export const getJsInfo = (allStr: string, range: Range, selectionText: string) =
                 const node = opt.node
                 if (startLine === node.loc.start.line) {
                     info = astParseNode(node, allStr);
-                    console.log(info)
+
                     // 存在同一行为不同类型的node节点
                     if(info){
                         return false
@@ -158,10 +169,7 @@ const astParseNodes = (ast: any, text: string) => {
     return arr
 }
 
-
-
-
-const astParseNodesText = (arr: any) => {
+const astParseNodesText = (arr: any): Array<{params: string,returns: string}>=> {
     const arrText = []
     for (let i = 0; i < arr.length; i++) {
         const tmp = {
@@ -184,4 +192,36 @@ const astParseNodesText = (arr: any) => {
         arrText.push(tmp)
     }
     return arrText
+}
+
+export const getJsArr = (allStr: string)=>{
+    const nodesTextInfo:Array<nodeTextInfo> = []
+
+    const ast: any = parse(allStr, {
+        loc: true,
+        range: true,
+        jsx: true,
+        debugLevel: true
+    });
+    // 遍历全文的ast,如果为函数，则进行注释的添加
+    try {
+        walk(ast, {
+            enter(opt: any) {
+                const node = opt.node
+               if(inParseNodes.indexOf(node.type)>-1){
+                    let info = astParseNode(node, allStr);
+                    if(info){
+                        nodesTextInfo.push({
+                            node,
+                            arr:astParseNodesText([info])
+                        })
+                    }
+               }
+            }
+        })
+    } catch (e) {
+        // 如果全文环境存在问题,那么停止解析
+        return null
+    }
+    return nodesTextInfo
 }

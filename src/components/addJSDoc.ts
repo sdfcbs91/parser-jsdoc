@@ -11,30 +11,12 @@ module.exports = function(context:ExtensionContext){
     if (!editor) {
       return
     }
-    // 定义匹配规则
-    // (param:xx,param:xx)
-    // const getParamReg = /\(([^)]*)\)/
-    // // ?:sombody[] 
-    // const paramEndReg = /[?]{0,1}\:(\s)*\w+(\[\])*/g
-    // // ?:
-    // const paramTypeReg = /[?]{0,1}\:(\s)*/g
 
     // 获取 selection 对象(其中包含当前选择的行与字符)
     const selection = editor.selection
     // 获取选中的内容
     const selectionText = editor.document.getText(selection)
     
-    // 获取参数列表, 去除其中的空格与回车
-    // const m = selectionText.match(getParamReg)
-
-    // if(!m) {
-    //   return
-    // }
-
-    
-
-    //const paramList = m[1].replace(/[\t\s\r]/g, '').split(',').filter(s => s !== '')
-
     let text = '/**\r'
     text += `* desc\r`
 
@@ -77,5 +59,4 @@ module.exports = function(context:ExtensionContext){
       // 插入注释
       editBuilder.insert(insertPosition, text)
     });
-    
 }
