@@ -28,7 +28,8 @@ module.exports = function (context: ExtensionContext) {
   author && (text += `* @author ${author}\r`);
 
   // 日期
-  text += `* @date ${getFormatDate("YYYY-MM-DD", new Date())}\r`;
+  const dateFormat: string = configuration.get("dateformat") || "YYYY-MM-DD";
+  text += `* @date ${getFormatDate(dateFormat, new Date())}\r`;
 
   let arrInfo: any = [];
   let boolInfo = false;
@@ -69,7 +70,7 @@ module.exports = function (context: ExtensionContext) {
         str += info.params;
         // returns
         if (info.returns) {
-          str += `* @returns {${info.returns}}\r`;
+          str += `* @returns { ${info.returns} }\r`;
         }
 
         // 还差补齐前空格

@@ -27,6 +27,10 @@ example:
 
 - `jsdoc.author`: 添加此选项, jsdoc 将自动插入作者
 
+- `jsdoc.dateformat`: Add this option and jsdoc will set the date format. For example 'YYYY-MM-DD hh:mm:ss'
+
+- `jsdoc.dateformat`: 添加此选项, jsdoc 将设置日期格式. 比如 'YYYY-MM-DD hh:mm:ss'
+
     Or click with the mouse, as shown below
 
     或者用鼠标点击，如下图

@@ -36,7 +36,8 @@ module.exports = function (context: ExtensionContext) {
   author && (text += `* @author ${author}\r`);
 
   // 日期
-  text += `* @date ${getFormatDate("YYYY-MM-DD", new Date())}\r`;
+  const dateFormat: string = configuration.get("dateformat") || "YYYY-MM-DD";
+  text += `* @date ${getFormatDate(dateFormat, new Date())}\r`;
 
   // 选中内容的参数
   let arrText: any = [];

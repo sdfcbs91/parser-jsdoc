@@ -47,6 +47,11 @@
 						"type": "string",
 						"default": "",
 						"description": "Add this option, jsdoc will automatically insert the author 添加此选项, jsdoc 将自动插入作者"
+					},
+					"jsdoc.dateformat": {
+						"type": "string",
+						"default": "YYYY-MM-DD",
+						"description": "jsdoc will set the date format. For example 'YYYY-MM-DD hh:mm:ss'. jsdoc 将设置日期格式. 比如 'YYYY-MM-DD hh:mm:ss'"
 					}
 				}
 			}
