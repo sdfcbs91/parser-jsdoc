@@ -11,7 +11,7 @@
 		"parser",
 		"standard"
 	],
-	"version": "1.2.5",
+	"version": "1.2.6",
 	"icon": "logo.png",
 	"engines": {
 		"vscode": "^1.30.0"
@@ -20,7 +20,8 @@
 		"Extension Packs"
 	],
 	"activationEvents": [
-		"*"
+		"onCommand:extension.addJSDoc",
+		"onCommand:extension.initJSDoc"
 	],
 	"main": "./out/extension",
 	"contributes": {
@@ -77,6 +78,6 @@
 		"eslint-plugin-prettier": "^4.0.0"
 	},
 	"dependencies": {
-		"@typescript-eslint/typescript-estree": "^5.19.0"
+		"@typescript-eslint/typescript-estree": "^5.36.1"
 	}
 }
