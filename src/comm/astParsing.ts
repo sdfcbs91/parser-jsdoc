@@ -174,7 +174,7 @@ const astParseNodesText = (
     item.params.forEach((par: any) => {
       let typeText = "";
       if (par.typeText) {
-        typeText = `{${par.typeText}} `;
+        typeText = `{ ${par.typeText} } `;
       }
       str += `* @param ${typeText}${par.name}\r`;
     });

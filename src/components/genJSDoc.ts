@@ -63,7 +63,7 @@ module.exports = function (context: ExtensionContext) {
     text += info.params;
     // returns
     if (info.returns) {
-      text += `* @returns {${info.returns}}\r`;
+      text += `* @returns { ${info.returns} }\r`;
     }
   } else {
     // 如果匹配到的内容长度小于1也返回false
